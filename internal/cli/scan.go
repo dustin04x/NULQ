@@ -30,6 +30,7 @@ func (a *App) runScan(ctx context.Context, args []string) int {
 	totalTimeout := flags.Duration("timeout", 5*time.Minute, "overall scan timeout")
 	maxFiles := flags.Int("max-files", filesystem.DefaultMaxFiles, "maximum filesystem entries inspected per root")
 	includeObservations := flags.Bool("observations", false, "include collected observations in the report")
+	deterministic := flags.Bool("deterministic", false, "normalize timestamps for byte-identical output on identical input")
 	failOn := flags.String("fail-on", "", "exit 3 when a finding at or above this severity exists (INFO..CRITICAL)")
 	color := flags.String("color", "auto", "colour mode: auto, always or never")
 	quiet := flags.Bool("quiet", false, "suppress informational output and findings below MEDIUM")
@@ -104,6 +105,7 @@ func (a *App) runScan(ctx context.Context, args []string) int {
 		ScanRoots:           roots,
 		MaxFiles:            *maxFiles,
 		IncludeObservations: *includeObservations,
+		Deterministic:       *deterministic,
 		Tool:                a.Version,
 	}, logger)
 
@@ -157,6 +159,7 @@ Flags:
   --collector-timeout duration  per-collector timeout (default 2m)
   --timeout duration         overall scan timeout (default 5m)
   --observations             include collected observations in the report
+  --deterministic            normalize timestamps for byte-identical output
   --fail-on string           exit 3 when a finding at or above this severity exists
   --color string             auto, always or never (default "auto")
   --quiet                    suppress informational output and findings below MEDIUM

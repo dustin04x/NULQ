@@ -26,6 +26,7 @@ const (
 	KindMount            Kind = "filesystem.mount"
 	KindFilesystemScan   Kind = "filesystem.scan"
 	KindProcess          Kind = "process.info"
+	KindSystemdUnit      Kind = "system.systemd_unit"
 )
 
 // AllKinds returns every observation kind in a stable order.
@@ -42,6 +43,7 @@ func AllKinds() []Kind {
 		KindMount,
 		KindFilesystemScan,
 		KindProcess,
+		KindSystemdUnit,
 	}
 }
 

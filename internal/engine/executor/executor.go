@@ -18,6 +18,7 @@ import (
 	"github.com/dustin04x/nulq/internal/core/interfaces"
 	"github.com/dustin04x/nulq/internal/core/models"
 	"github.com/dustin04x/nulq/internal/engine/aggregation"
+	"github.com/dustin04x/nulq/internal/engine/correlation"
 	"github.com/dustin04x/nulq/internal/engine/store"
 )
 
@@ -73,6 +74,7 @@ type Result struct {
 	Evidence     []models.Evidence
 	Collectors   []CollectorOutcome
 	Rules        []RuleOutcome
+	Correlation  *correlation.CorrelationResult
 }
 
 // Duration returns the wall-clock time of the scan.
@@ -133,6 +135,10 @@ func (e *Engine) Run(ctx context.Context) (Result, error) {
 	}
 	result.Findings = mergedFindings
 	result.Evidence = mergedEvidence
+
+	// Run correlation engine on the observations and merged results.
+	var corrEngine = correlation.NewEngine(obsStore)
+	result.Correlation = corrEngine.Run()
 	return result, nil
 }
 

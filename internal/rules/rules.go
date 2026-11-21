@@ -24,6 +24,10 @@ func All() []interfaces.Rule {
 		processrules.NewWritableParentRule(),
 		sysrules.NewSysctlRule(),
 		sysrules.NewMACRule(),
+		sysrules.NewCapabilitiesRule(),
+		sysrules.NewSeccompRule(),
+		sysrules.NewSystemdRule(),
+		sysrules.NewUsernsRule(),
 	}
 }
 

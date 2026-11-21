@@ -156,6 +156,24 @@ const (
 	AttrNoexec        = "noexec"
 )
 
+// Process capability and seccomp metadata, read from /proc/<pid>/status.
+// Capability values are hex strings as exposed by the kernel.
+const (
+	AttrCapEffective = "cap_effective"
+	AttrCapBounding  = "cap_bounding"
+	AttrSeccomp      = "seccomp"
+)
+
+// Systemd unit security directives, read from unit files.
+const (
+	AttrSystemdUser                  = "systemd_user"
+	AttrSystemdNoNewPrivileges       = "systemd_no_new_privileges"
+	AttrSystemdProtectSystem         = "systemd_protect_system"
+	AttrSystemdProtectHome           = "systemd_protect_home"
+	AttrSystemdPrivateTmp            = "systemd_private_tmp"
+	AttrSystemdCapabilityBoundingSet = "systemd_capability_bounding_set"
+)
+
 // Resource kinds identify what a finding is about. They are a small closed
 // vocabulary so downstream consumers and the relationship graph can reason
 // about findings without parsing free-form paths.

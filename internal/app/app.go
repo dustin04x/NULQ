@@ -18,6 +18,7 @@ import (
 	"github.com/dustin04x/nulq/internal/platform/linux/identity"
 	"github.com/dustin04x/nulq/internal/platform/linux/process"
 	"github.com/dustin04x/nulq/internal/platform/linux/system"
+	"github.com/dustin04x/nulq/internal/platform/linux/systemd"
 	"github.com/dustin04x/nulq/internal/rules"
 	"github.com/dustin04x/nulq/internal/version"
 )
@@ -33,6 +34,7 @@ type ScanConfig struct {
 	MaxFiles            int
 	PathEnv             string
 	IncludeObservations bool
+	Deterministic       bool
 	Tool                version.Info
 	// ProcRoot overrides the proc filesystem root. Normal CLI usage leaves it
 	// empty; synthetic integration tests point it at a controlled tree so the
@@ -82,6 +84,9 @@ func Scan(ctx context.Context, cfg ScanConfig, logger *slog.Logger) (models.Repo
 	if needsProcess(selected) {
 		collectors = append(collectors, process.NewCollector(process.Options{ProcRoot: cfg.ProcRoot}, logger))
 	}
+	if needsSystemd(selected) {
+		collectors = append(collectors, systemd.NewCollector(systemd.Options{}, logger))
+	}
 
 	engine := executor.New(selected, collectors, executor.Options{
 		Concurrency:      cfg.Concurrency,
@@ -119,6 +124,13 @@ func buildReport(cfg ScanConfig, selected []interfaces.Rule, result executor.Res
 	startedAt := result.StartedAt
 	if startedAt.IsZero() {
 		startedAt = time.Now().UTC()
+	}
+
+	// Deterministic mode normalizes all wall-clock timestamps so identical
+	// input produces byte-identical JSON. The zero time is used as the
+	// reference so output is reproducible across runs.
+	if cfg.Deterministic {
+		startedAt = time.Time{}
 	}
 
 	stats := models.Stats{
@@ -206,10 +218,30 @@ func buildReport(cfg ScanConfig, selected []interfaces.Rule, result executor.Res
 		Coverage:     buildCoverage(result),
 		Limitations:  limitations,
 	}
+
+	if cfg.Deterministic {
+		normalizeDeterministic(&report, startedAt)
+	}
+
 	report.Normalize()
 	return report
 }
 
+// normalizeDeterministic replaces wall-clock timestamps with the deterministic
+// reference so two scans of identical input produce byte-identical JSON.
+func normalizeDeterministic(report *models.Report, ref time.Time) {
+	report.Scan.StartedAt = ref.UTC()
+	report.Scan.FinishedAt = ref.UTC()
+	report.Scan.DurationMS = 0
+	report.Scan.ReportID = models.NewReportID(report.Host.Hostname, ref)
+
+	for i := range report.Findings {
+		report.Findings[i].DetectedAt = ref.UTC()
+	}
+	for i := range report.Observations {
+		report.Observations[i].CollectedAt = ref.UTC()
+	}
+}
 func hostInfo(observations []models.Observation) models.HostInfo {
 	host := models.HostInfo{
 		Hostname:     "unknown-host",
@@ -263,6 +295,17 @@ func needsProcess(selected []interfaces.Rule) bool {
 	for _, rule := range selected {
 		for _, kind := range rule.Metadata().Required {
 			if kind == models.KindProcess {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func needsSystemd(selected []interfaces.Rule) bool {
+	for _, rule := range selected {
+		for _, kind := range rule.Metadata().Required {
+			if kind == models.KindSystemdUnit {
 				return true
 			}
 		}

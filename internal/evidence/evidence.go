@@ -92,6 +92,8 @@ func resourceKind(kind models.Kind) string {
 		return models.ResourceFilesystem
 	case models.KindProcess:
 		return models.ResourceProcess
+	case models.KindSystemdUnit:
+		return models.ResourceSystem
 	default:
 		return models.ResourceSystem
 	}

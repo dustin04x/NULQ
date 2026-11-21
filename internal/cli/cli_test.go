@@ -83,8 +83,8 @@ func TestRulesListCommand(t *testing.T) {
 	if err := json.Unmarshal(stdout.Bytes(), &rules); err != nil {
 		t.Fatalf("rules JSON is invalid: %v", err)
 	}
-	if len(rules) != 8 {
-		t.Fatalf("want 8 registered rules, got %d", len(rules))
+	if len(rules) != 12 {
+		t.Fatalf("want 12 registered rules, got %d", len(rules))
 	}
 	registered := map[string]models.RuleMetadata{}
 	for _, rule := range rules {

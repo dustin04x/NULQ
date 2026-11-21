@@ -83,6 +83,9 @@ type statusInfo struct {
 	kernelThread bool
 	uidSeen      bool
 	gidSeen      bool
+	capEffective string
+	capBounding  string
+	seccomp      string
 }
 
 // Collect implements interfaces.Collector. A failure to read one process is
@@ -156,6 +159,9 @@ func (c *Collector) collectProcess(ctx context.Context, pid string, credentials 
 	observation.Set(models.AttrProcessGID, strconv.FormatUint(uint64(status.realGID), 10))
 	observation.Set(models.AttrProcessEGID, strconv.FormatUint(uint64(status.effectiveGID), 10))
 	observation.Set(models.AttrProcessStartTime, startBefore)
+	observation.Set(models.AttrCapEffective, status.capEffective)
+	observation.Set(models.AttrCapBounding, status.capBounding)
+	observation.Set(models.AttrSeccomp, status.seccomp)
 
 	groups := make([]string, 0, len(status.groups))
 	for _, group := range status.groups {
@@ -354,6 +360,12 @@ func readStatus(path string) (statusInfo, error) {
 			}
 		case "Kthread":
 			status.kernelThread = value == "1"
+		case "CapEff":
+			status.capEffective = value
+		case "CapBnd":
+			status.capBounding = value
+		case "Seccomp":
+			status.seccomp = value
 		}
 	}
 	if status.name == "" || status.ppid == "" || !status.uidSeen || !status.gidSeen {
