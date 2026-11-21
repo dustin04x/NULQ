@@ -1,0 +1,118 @@
+# NULQ laboratory.
+#
+# Every service shares one hardened baseline: unprivileged user, all
+# capabilities dropped, no-new-privileges, read-only root filesystem,
+# size-limited noexec/nosuid/nodev /tmp, no network and no host namespaces.
+# Only the nulq binary is mounted, read-only, and only the fixtures the target
+# image already contains are visible.
+#
+# Cleanup is scoped to project "nulq-lab" and the com.nulq.lab label.
+
+name: nulq-lab
+
+x-lab-image: &lab-image
+  image: ${LAB_IMAGE:-nulq-lab/alpine-target:3.22}
+  build:
+    context: ./docker/alpine
+    labels:
+      com.nulq.lab: "true"
+
+x-lab-security: &lab-security
+  image: ${LAB_IMAGE:-nulq-lab/alpine-target:3.22}
+  user: "10001:10001"
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  network_mode: none
+  pull_policy: never
+  init: false
+  restart: "no"
+  labels:
+    com.nulq.lab: "true"
+  volumes:
+    - type: bind
+      source: ${NULQ_BINARY:-../bin/nulq}
+      target: /opt/nulq/nulq
+      read_only: true
+      bind:
+        create_host_path: false
+
+x-lab-tmpfs: &lab-tmpfs
+  - "/tmp:rw,noexec,nosuid,nodev,size=1m,mode=1777"
+
+services:
+  # Baseline assessment of the live Alpine userland. The fixture tree is
+  # masked with an empty tmpfs so fixture observations can never be presented
+  # as live operating-system facts.
+  nulq-baseline:
+    <<: *lab-security
+    entrypoint: ["/opt/nulq/nulq"]
+    # --root / keeps the baseline deterministic: mount points are pruned by
+    # the collector instead of being assessed as separate roots.
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--root", "/"]
+    tmpfs:
+      - "/tmp:rw,noexec,nosuid,nodev,size=1m,mode=1777"
+      - "/lab/fixtures:rw,nosuid,nodev,size=64k,mode=0755"
+
+  # Filesystem fixtures: SUID/SGID, world-writable, nested, negative controls
+  # and an unreadable subtree that must be reported as partial coverage.
+  nulq-fixtures:
+    <<: *lab-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--root", "/lab/fixtures"]
+    tmpfs: *lab-tmpfs
+
+  # Hostile PATH: writable directory, empty element, symlink, missing entry.
+  nulq-path:
+    <<: *lab-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--root", "/lab/fixtures"]
+    environment:
+      PATH: "/lab/fixtures/path/writable::/lab/fixtures/path/user-owned:/lab/fixtures/links/path-link:/lab/fixtures/path/missing:/usr/bin:/lab/fixtures/path/late-writable:/lab/fixtures/path/other-owned:/bin"
+    tmpfs: *lab-tmpfs
+
+  # Auto-discovered mounts: exercises coverage reporting for deliberate
+  # exclusions (pseudo filesystems, runtime trees) separately from traversal
+  # failures. Bounded so the container cannot walk an unbounded tree. Fixtures
+  # are masked so this stays a live-container scan, not a mixed one.
+  nulq-discovery:
+    <<: *lab-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--modules", "filesystem", "--max-files", "5000"]
+    tmpfs:
+      - "/tmp:rw,noexec,nosuid,nodev,size=1m,mode=1777"
+      - "/lab/fixtures:rw,nosuid,nodev,size=64k,mode=0755"
+
+  # Identity: the runtime grants wheel (gid 10) as a supplementary group.
+  # Membership is granted by the container runtime, not baked into the image.
+  nulq-identity:
+    <<: *lab-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--modules", "identity"]
+    group_add:
+      - "10"
+    tmpfs: *lab-tmpfs
+
+  # Long-running target for manual inspection with `make lab-up`.
+  lab-target:
+    <<: [*lab-image, *lab-security]
+    entrypoint: ["/bin/sleep", "infinity"]
+    tmpfs: *lab-tmpfs
+
+  # Isolation proof: reports the security properties from inside the sandbox.
+  lab-probe:
+    <<: *lab-security
+    entrypoint: ["/bin/sh", "/lab/probe.sh"]
+    tmpfs: *lab-tmpfs

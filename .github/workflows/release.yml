@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.x"
+
+      - name: test before release
+        run: go test ./...
+
+      - name: build release artifacts
+        run: make release VERSION="${GITHUB_REF_NAME#v}"
+
+      - name: verify checksums
+        run: make verify
+
+      - name: inspect artifacts
+        run: |
+          for binary in dist/nulq-*-linux-*; do
+            case "$binary" in *.sha256) continue;; esac
+            file "$binary"
+            sha256sum "$binary"
+          done
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/nulq-*-linux-amd64
+            dist/nulq-*-linux-arm64
+            dist/SHA256SUMS
+          generate_release_notes: true

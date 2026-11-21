@@ -1,0 +1,1239 @@
+{
+  "schema_version": "1.0",
+  "target": "Alpine Linux 3.22 (BusyBox), linux/amd64",
+  "description": "Scenario contract for the NULQ Alpine laboratory. Supported scenarios are evaluated against the real binary's JSON. Severity assertions require evidence-justified exposure; unsupported scenarios document checks that no rule implements yet and are never reported as passes.",
+  "artifacts": {
+    "baseline": "scan.json",
+    "fixtures": "scan-fixtures.json",
+    "path": "scan-path.json",
+    "identity": "scan-identity.json",
+    "discovery": "scan-discovery.json"
+  },
+  "scenarios": [
+    {
+      "id": "ID-001",
+      "title": "Assessment runs unprivileged on Alpine",
+      "category": "identity",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "The real binary executes as uid 10001 inside the container, reports unprivileged execution and identifies the target OS.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "identity.execution_context",
+            "attr": "euid",
+            "equals": "10001"
+          },
+          {
+            "kind": "system.info",
+            "attr": "os_id",
+            "equals": "alpine"
+          }
+        ],
+        "report": {
+          "unprivileged": true
+        },
+        "coverage": {
+          "status": "partial",
+          "complete": false,
+          "execution_complete": true,
+          "permission_denied_min": 1
+        },
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ID-002",
+      "title": "Container context is detected",
+      "category": "identity",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "NULQ records that it assessed a container rather than a bare-metal host.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "system.info",
+            "attr": "container",
+            "equals": "true"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ID-003",
+      "title": "No privileged group membership in the baseline",
+      "category": "identity",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "The baseline account belongs only to its own group, so NULQ-ID-001 must stay silent.",
+      "expect": {
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-ID-001",
+            "match": "any"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ID-004",
+      "title": "Wheel membership is reported as contextual LOW",
+      "category": "identity",
+      "environment": "live",
+      "supported": true,
+      "scan": "identity",
+      "description": "The runtime grants wheel (gid 10) as a supplementary group. Actual sudo authority is not evaluated, so the rule reports a LOW membership observation.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-ID-001",
+            "resource": "group:wheel",
+            "match": "exact",
+            "severity": "LOW",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          }
+        ],
+        "coverage": {
+          "status": "complete",
+          "execution_complete": true
+        },
+        "report": {
+          "unprivileged": true
+        }
+      }
+    },
+    {
+      "id": "FS-001",
+      "title": "World-writable directory without sticky bit",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "A 0777 root-owned directory is reported MEDIUM with MEDIUM confidence, attributed to the exact fixture path.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/world-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "confidence": "MEDIUM",
+            "min": 1,
+            "max": 1
+          }
+        ],
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-002",
+      "title": "Sticky and group-writable directories stay silent",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "A 1777 directory restricts deletion and a 0770 root:wheel directory is not world-writable; neither may produce a finding.",
+      "expect": {
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/world-writable-sticky",
+            "match": "exact"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/group-writable",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-003",
+      "title": "Nested world-writable directory is attributed correctly",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "A deeply nested 0777 directory must be found and attributed to its own path, not its parent.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/nested/deep/world-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/nested/deep",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-004",
+      "title": "World-writable directory containing a privileged executable escalates",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "The same directory permission becomes HIGH only because it contains a set-owner-ID executable that can be replaced.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-with-suid",
+            "match": "exact",
+            "severity": "HIGH",
+            "min": 1,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-005",
+      "title": "Set-owner-ID executable outside standard directories",
+      "category": "suid-sgid",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "A root-owned SUID binary outside distribution binary directories is inventory worth review (LOW). Location alone does not establish exposure.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/root-owned-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-006",
+      "title": "SGID executable inventory",
+      "category": "suid-sgid",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "A root:wheel SGID binary is inventoried as LOW with evidence for both owner bits. The SGID bit alone is not a vulnerability.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/sgid-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-007",
+      "title": "User-owned SUID executable crosses no user boundary",
+      "category": "suid-sgid",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "A SUID binary owned by uid 10001 and writable by that same account is LOW: executing it returns the caller's own credentials. It must never be reported as MEDIUM or HIGH.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/user-owned-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/user-owned-tool",
+            "match": "exact",
+            "severity": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/user-owned-tool",
+            "match": "exact",
+            "severity": "MEDIUM"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-008",
+      "title": "Ordinary files produce no SUID finding",
+      "category": "suid-sgid",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "Negative control: a 0755 binary without owner bits is not inventoried.",
+      "expect": {
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/plain-tool",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-009",
+      "title": "Standard-directory privileged executable is INFO inventory",
+      "category": "suid-sgid",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "baseline",
+      "description": "Baseline calibration: /usr/lib/lab/standard-suid is distribution-style inventory (INFO). It is not a live distribution binary, but it exercises the location rule honestly.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/usr/lib/lab/standard-suid",
+            "match": "exact",
+            "severity": "INFO",
+            "min": 1,
+            "max": 1
+          }
+        ],
+        "max_severity": "LOW"
+      }
+    },
+    {
+      "id": "FS-010",
+      "title": "Unreadable subtree yields partial coverage, not silence",
+      "category": "coverage",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "A root-owned 0700 directory cannot be entered by uid 10001. Coverage must be partial, execution complete, and the denial counted.",
+      "expect": {
+        "coverage": {
+          "status": "partial",
+          "complete": false,
+          "execution_complete": true,
+          "permission_denied_min": 1
+        }
+      }
+    },
+    {
+      "id": "FS-011",
+      "title": "Writable PATH directory is contextual LOW, not HIGH",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "A root-owned 0777 directory in PATH is a world-writable directory (FS-002 MEDIUM) and a writable PATH entry (FS-003 LOW). No privileged consumer is observed, so neither finding is HIGH.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/writable",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/writable",
+            "match": "exact",
+            "severity": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/writable",
+            "match": "exact",
+            "severity": "HIGH"
+          }
+        ],
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-012",
+      "title": "Symlinked PATH entry is judged by its target",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "The /bin-style regression: a symlink to a non-writable directory must not be reported as writable. The collector records the link.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "filesystem.path_entry",
+            "resource": "/lab/fixtures/links/path-link",
+            "attr": "symlink",
+            "equals": "true"
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/links/path-link",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-013",
+      "title": "Missing PATH entry is recorded but not invented",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "A PATH entry that does not exist is observed with path_exists=false and must not produce a writability finding.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "filesystem.path_entry",
+            "resource": "/lab/fixtures/path/missing",
+            "attr": "path_exists",
+            "equals": "false"
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/missing",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-014",
+      "title": "Empty PATH element is contextual LOW",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "An empty PATH element means the working directory. It is reported at the exact index as LOW: no privileged consumer of this PATH was observed, so escalation is not established.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "<PATH index 1: empty>",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-015",
+      "title": "User-owned PATH directory is informational LOW",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "A directory the user owns and can write is normal for user-managed tools and must not be escalated.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/user-owned",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-016",
+      "title": "Pseudo filesystems and host namespaces are excluded",
+      "category": "coverage",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "Mounts are observed, but /proc, /sys, /dev and /run are never traversed as assessable filesystems.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "filesystem.mount",
+            "resource": "/proc"
+          }
+        ],
+        "report": {
+          "include_roots": [
+            "/"
+          ],
+          "exclude_roots": [
+            "/proc",
+            "/sys",
+            "/dev",
+            "/run"
+          ]
+        }
+      }
+    },
+    {
+      "id": "FS-017",
+      "title": "Writable PATH entry after trusted locations stays LOW",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "A 0777 PATH directory placed after /usr/bin is still reported as a contextual FS-003 LOW and an FS-002 MEDIUM; ordering alone never produces HIGH without a consumer.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/late-writable",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/late-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/late-writable",
+            "match": "exact",
+            "severity": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/late-writable",
+            "match": "exact",
+            "severity": "HIGH"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-018",
+      "title": "PATH directory owned by another account but not writable is silent",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "The entry is owned by uid 10002 with mode 0755. The assessed uid 10001 cannot write to it, so ownership alone must not produce a PATH finding.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "filesystem.path_entry",
+            "resource": "/lab/fixtures/path/other-owned",
+            "attr": "path_exists",
+            "equals": "true"
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/other-owned",
+            "match": "exact"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/other-owned",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-019",
+      "title": "Nested privileged executable does not escalate the writable parent",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "The parent is 0777 but the privileged executable lives in a root-owned 0755 subdirectory, so it cannot be replaced through the parent. FS-002 must stay MEDIUM.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-nested-suid",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/ww-nested-suid/inner/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-nested-suid",
+            "match": "exact",
+            "severity": "HIGH"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-020",
+      "title": "Non-executable set-owner-ID file is inert inventory",
+      "category": "suid-sgid",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "A root-owned file with mode 4644 carries a set-user-ID bit but no execute bit. The kernel ignores it, so the finding is INFO and can never be HIGH or MEDIUM.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/inert-suid",
+            "match": "exact",
+            "severity": "INFO",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/inert-suid",
+            "match": "exact",
+            "severity": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/inert-suid",
+            "match": "exact",
+            "severity": "MEDIUM"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-021",
+      "title": "User-owned SUID child does not escalate the writable directory",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "The directory is 0777 and contains a SUID executable owned by uid 10001. Replacing it grants only that unprivileged account's authority, so FS-002 stays MEDIUM.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-with-user-suid",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "confidence": "MEDIUM",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/ww-with-user-suid/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          }
+        ],
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-with-user-suid",
+            "match": "exact",
+            "severity": "HIGH"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-022",
+      "title": "Sticky directory owned by the assessed user does not protect root SUID",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "The directory is 1777 but owned by uid 10001, so the assessed owner can unlink the root-owned SUID child. FS-002 must escalate; a root-owned sticky directory would not.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/sticky-owned",
+            "match": "exact",
+            "severity": "HIGH",
+            "confidence": "MEDIUM",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/sticky-owned/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "SYS-001",
+      "title": "Kernel hardening parameters are collected",
+      "category": "system",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "The collector records the curated sysctl set. Findings, if any, stay at LOW or below; no critical claim is made from a shared container kernel.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "system.sysctl",
+            "min": 10
+          }
+        ],
+        "max_severity": "LOW"
+      }
+    },
+    {
+      "id": "SYS-002",
+      "title": "MAC posture is observed honestly",
+      "category": "system",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "Security-control observations exist even when the container cannot see an LSM list; the rule reports unavailable data instead of assuming enforcement.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "system.security_control",
+            "min": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "COV-001",
+      "title": "Baseline coverage reports the unreadable root home",
+      "category": "coverage",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "Alpine's /root is 0700 root:root, so an unprivileged scan cannot enter it. Coverage must be partial, execution complete, and the denial counted instead of claiming complete coverage.",
+      "expect": {
+        "coverage": {
+          "status": "partial",
+          "complete": false,
+          "execution_complete": true,
+          "permission_denied_min": 1
+        }
+      }
+    },
+    {
+      "id": "COV-002",
+      "title": "Deliberate mount exclusions are reported separately from failures",
+      "category": "coverage",
+      "environment": "live",
+      "supported": true,
+      "scan": "discovery",
+      "description": "Auto-discovered mounts list /proc and /sys as deliberately excluded, while the unreadable /root remains a traversal denial. Neither is allowed to disappear from coverage.",
+      "expect": {
+        "coverage": {
+          "status": "partial",
+          "complete": false,
+          "execution_complete": true,
+          "permission_denied_min": 1,
+          "excluded_roots_include": [
+            "/proc",
+            "/sys"
+          ]
+        },
+        "report": {
+          "include_roots": [
+            "/"
+          ],
+          "exclude_roots": [
+            "/proc"
+          ]
+        },
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "match": "exact",
+            "resource": "/usr/lib/lab/standard-suid"
+          }
+        ]
+      }
+    },
+    {
+      "id": "INV-001",
+      "title": "Fixture set produces exactly the expected findings",
+      "category": "coverage",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "Complete inventory of the fixture tree: every expected finding is present with its severity and confidence, and no unclaimed finding appears anywhere under /lab/fixtures.",
+      "scope": [
+        "/lab/fixtures/"
+      ],
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/world-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/nested/deep/world-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-with-suid",
+            "match": "exact",
+            "severity": "HIGH",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-nested-suid",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/late-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/ww-with-suid/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/ww-nested-suid/inner/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/root-owned-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/sgid-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/user-owned-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/inert-suid",
+            "match": "exact",
+            "severity": "INFO",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-with-user-suid",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "confidence": "MEDIUM",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/sticky-owned",
+            "match": "exact",
+            "severity": "HIGH",
+            "confidence": "MEDIUM",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/ww-with-user-suid/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/sticky-owned/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "INV-002",
+      "title": "Hostile PATH produces exactly the expected findings",
+      "category": "coverage",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "Complete inventory of the PATH scan: writable PATH entries and the empty element are contextual LOW, world-writable directories are MEDIUM, and no unclaimed finding appears in scope.",
+      "scope": [
+        "/lab/fixtures/",
+        "<PATH"
+      ],
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/world-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/nested/deep/world-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-with-suid",
+            "match": "exact",
+            "severity": "HIGH",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-nested-suid",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/path/late-writable",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "min": 1,
+            "max": 1,
+            "confidence": "MEDIUM"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/ww-with-suid/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/ww-nested-suid/inner/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/root-owned-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/sgid-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/user-owned-tool",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/writable",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/user-owned",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "<PATH index 1: empty>",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/late-writable",
+            "match": "exact",
+            "severity": "LOW",
+            "min": 1,
+            "max": 1,
+            "confidence": "HIGH"
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/inert-suid",
+            "match": "exact",
+            "severity": "INFO",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ww-with-user-suid",
+            "match": "exact",
+            "severity": "MEDIUM",
+            "confidence": "MEDIUM",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/sticky-owned",
+            "match": "exact",
+            "severity": "HIGH",
+            "confidence": "MEDIUM",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/ww-with-user-suid/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          },
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/fs/sticky-owned/tool",
+            "match": "exact",
+            "severity": "LOW",
+            "confidence": "HIGH",
+            "min": 1,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "CAP-001",
+      "title": "File capability metadata",
+      "category": "capabilities",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "No capability collector or rule exists until M3 (ROADMAP). The fixture at /lab/fixtures/capabilities is synthetic and is not examined by any rule.",
+      "description": "Would verify capability-set parsing and severity without ever invoking a capability."
+    },
+    {
+      "id": "SUDO-001",
+      "title": "Sudo policy parsing and negative cases",
+      "category": "sudo",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "Sudo policy parsing is scheduled for M3. The fixtures under /lab/fixtures/sudo (safe, NOPASSWD, malformed) are never read by NULQ in this milestone.",
+      "description": "Would verify safe parsing of sudoers syntax, ownership and permissions, and that no sudo command is executed."
+    },
+    {
+      "id": "UNIT-001",
+      "title": "systemd unit execution identity",
+      "category": "systemd",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "systemd unit parsing is scheduled for M3. Alpine does not run systemd and the unit fixture is synthetic; no service is started or stopped.",
+      "description": "Would verify User=, ExecStart= and writable-dependency analysis for privileged units."
+    },
+    {
+      "id": "CRON-001",
+      "title": "Cron job ownership and script references",
+      "category": "cron",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "Cron parsing is scheduled for M3. The cron fixture is synthetic and no scheduled job is installed or executed.",
+      "description": "Would verify cron file ownership, permissions and referenced-script writability."
+    },
+    {
+      "id": "CTR-001",
+      "title": "Container runtime configuration",
+      "category": "containers",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "Container runtime configuration analysis is scheduled for M4. The JSON fixture is synthetic; no container escape is attempted.",
+      "description": "Would verify privileged-container indicators, dangerous mounts and capability configuration."
+    }
+  ]
+}
