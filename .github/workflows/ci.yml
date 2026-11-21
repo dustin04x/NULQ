@@ -160,11 +160,12 @@ jobs:
 
       - name: Verify binaries
         run: |
+          # Verify the binary matching this runner's architecture
+          # GitHub hosted runners are typically linux/amd64
           /tmp/nulq-amd64 version
-          /tmp/nulq-arm64 version
           /tmp/nulq-amd64 rules list
-          /tmp/nulq-arm64 rules list
-
+        # Note: ARM64 binary verification skipped on amd64 runners;
+        # cross-compiled arm64 binaries require arm64 runners or QEMU emulation
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
