@@ -181,6 +181,52 @@ func TestScanFailOnContract(t *testing.T) {
 	}
 }
 
+// testFailOnContractCoverages codifies the fail-on severity contract:
+//   - A finding at or above the threshold triggers exit 3.
+//   - Findings below the threshold result in exit 0.
+//   - No findings result in exit 0 regardless of threshold.
+func testFailOnContractCoverages(t *testing.T, threshold string, expectExit int) {
+	t.Helper()
+	root := fixtureRoot(t)
+
+	app, _, _ := newTestApp()
+	code := app.Run(context.Background(), []string{
+		"scan", "--root", root, "--format", "json",
+		"--fail-on", threshold,
+	})
+	if code != expectExit {
+		t.Fatalf("fail-on %s: exit code = %d, want %d", threshold, code, expectExit)
+	}
+}
+
+// Verify the documented contract: exit 3 when a finding at or above the threshold exists.
+func TestScanFailOnContractCoverages(t *testing.T) {
+	// The fixture produces max severity MEDIUM, so:
+	testFailOnContractCoverages(t, "info", ExitFindings)   // MEDIUM >= INFO => 3
+	testFailOnContractCoverages(t, "low", ExitFindings)    // MEDIUM >= LOW => 3
+	testFailOnContractCoverages(t, "medium", ExitFindings) // MEDIUM >= MEDIUM => 3
+	testFailOnContractCoverages(t, "high", ExitOK)         // MEDIUM >= HIGH => 0
+	testFailOnContractCoverages(t, "critical", ExitOK)     // MEDIUM >= CRITICAL => 0
+}
+
+// verifyNoFindingsWithFailOn ensures that a scan with no findings
+// always returns exit 0, regardless of the --fail-on threshold.
+func TestScanFailOnNoFindings(t *testing.T) {
+	t.Setenv("PATH", "")
+	// Use a minimal empty root instead of fixtureRoot to avoid producing findings
+	root := t.TempDir()
+
+	app, _, _ := newTestApp()
+	code := app.Run(context.Background(), []string{
+		"scan", "--root", root, "--format", "json",
+		"--fail-on", "high",
+	})
+	// With no findings, MaxSeverity() returns "" (invalid), AtLeast returns false => exit 0
+	if code != ExitOK {
+		t.Fatalf("fail-on high with no findings: exit code = %d, want %d", code, ExitOK)
+	}
+}
+
 func TestScanBudgetProducesPartialReport(t *testing.T) {
 	t.Setenv("PATH", "")
 	root := fixtureRoot(t)
