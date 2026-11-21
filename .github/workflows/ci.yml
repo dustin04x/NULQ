@@ -2,14 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
+    branches: [master]
 
 permissions:
   contents: read
+  # Only request necessary permissions; avoid workflow permissions unless needed.
 
 jobs:
   verify:
+    name: Verify
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -66,27 +69,37 @@ jobs:
         env:
           FIXTURE_ROOT: /tmp/nulq-ci-test-root
         run: |
+          # Ensure fixture directory exists
           mkdir -p "$FIXTURE_ROOT"
           
+          # The fixture produces max severity MEDIUM, so:
+          # --fail-on info/low/medium should exit 3 (finding at/above threshold)
+          # --fail-on high/critical should exit 0 (finding below threshold)
           set +e
           
+          # info threshold (should be 3 - INFO finding exists)
           ./bin/nulq scan --root "$FIXTURE_ROOT" --format json --fail-on info > /dev/null 2>&1
           status_info=$?
           
+          # low threshold (should be 3 - MEDIUM >= LOW)
           ./bin/nulq scan --root "$FIXTURE_ROOT" --format json --fail-on low > /dev/null 2>&1
           status_low=$?
           
+          # medium threshold (should be 3 - MEDIUM >= MEDIUM)
           ./bin/nulq scan --root "$FIXTURE_ROOT" --format json --fail-on medium > /dev/null 2>&1
           status_medium=$?
           
+          # high threshold (should be 0 - MEDIUM < HIGH)
           ./bin/nulq scan --root "$FIXTURE_ROOT" --format json --fail-on high > /dev/null 2>&1
           status_high=$?
           
+          # critical threshold (should be 0 - MEDIUM < CRITICAL)
           ./bin/nulq scan --root "$FIXTURE_ROOT" --format json --fail-on critical > /dev/null 2>&1
           status_critical=$?
           
           set -e
           
+          # Validate contract semantics
           if [ "$status_info" -ne 3 ]; then
             echo "FAIL: --fail-on info expected exit 3, got $status_info"
             exit 1
@@ -112,13 +125,16 @@ jobs:
 
       - name: Verify README exit codes table
         run: |
+          # Verify the exit codes table in README.md is consistent
           grep -A 4 '^| Code | Meaning' README.md | head -5
           echo "README exit codes check PASSED"
 
   release:
+    name: Release Build
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: github.ref == 'refs/heads/main'
+    # Release on master pushes
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
