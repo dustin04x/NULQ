@@ -808,6 +808,58 @@
       }
     },
     {
+      "id": "SYS-007",
+      "title": "Kernel hardware mitigations are observed",
+      "category": "system",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "The collector reads /sys/devices/system/cpu/vulnerabilities/* and reports each mitigation status. NULQ-SYS-007 fires on mitigated and unmitigated vulnerabilities alike.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "system.kernel_mitigation",
+            "min": 1
+          }
+        ],
+        "findings": [
+          {
+            "rule_id": "NULQ-SYS-007",
+            "match": "any",
+            "min": 1,
+            "max": 100
+          }
+        ],
+        "max_severity": "MEDIUM"
+      }
+    },
+    {
+      "id": "SYS-008",
+      "title": "Container runtime indicators are detected",
+      "category": "system",
+      "environment": "live",
+      "supported": true,
+      "scan": "baseline",
+      "description": "The collector probes Docker socket, containerd socket and /.dockerenv without connecting to any socket. NULQ-SYS-008 fires when any marker is present.",
+      "expect": {
+        "observations": [
+          {
+            "kind": "system.container_indicator",
+            "min": 1
+          }
+        ],
+        "findings": [
+          {
+            "rule_id": "NULQ-SYS-008",
+            "match": "any",
+            "min": 1,
+            "max": 100
+          }
+        ],
+        "max_severity": "MEDIUM"
+      }
+    },
+    {
       "id": "SYS-002",
       "title": "MAC posture is observed honestly",
       "category": "system",
@@ -1248,8 +1300,8 @@
       "category": "capabilities",
       "environment": "unsupported",
       "supported": false,
-      "reason": "No capability collector or rule exists until M3 (ROADMAP). The fixture at /lab/fixtures/capabilities is synthetic and is not examined by any rule.",
-      "description": "Would verify capability-set parsing and severity without ever invoking a capability."
+      "reason": "NULQ-FS-005 exists and is unit-tested (positive/negative/unavailable). Lab fixture testing is not applicable because the filesystem collector reads live paths under --root, and setting real security.capability xattrs on fixture binaries requires capabilities not available in the read-only laboratory image.",
+      "description": "Unit tests cover capability-set parsing and severity. Would verify on a live system with capable binaries."
     },
     {
       "id": "SUDO-001",
@@ -1257,8 +1309,8 @@
       "category": "sudo",
       "environment": "unsupported",
       "supported": false,
-      "reason": "Sudo policy parsing is scheduled for M3. The fixtures under /lab/fixtures/sudo (safe, NOPASSWD, malformed) are never read by NULQ in this milestone.",
-      "description": "Would verify safe parsing of sudoers syntax, ownership and permissions, and that no sudo command is executed."
+      "reason": "NULQ-ID-002 exists and is unit-tested (positive/negative/unavailable). Lab fixture testing is not applicable because the sudo collector reads /etc/sudoers and /etc/sudoers.d from the live system, not from --root fixtures.",
+      "description": "Unit tests cover safe parsing of sudoers syntax, ownership and permissions, and that no sudo command is executed."
     },
     {
       "id": "UNIT-001",
@@ -1275,8 +1327,8 @@
       "category": "cron",
       "environment": "unsupported",
       "supported": false,
-      "reason": "Cron parsing is scheduled for M3. The cron fixture is synthetic and no scheduled job is installed or executed.",
-      "description": "Would verify cron file ownership, permissions and referenced-script writability."
+      "reason": "NULQ-ID-003 exists and is unit-tested (positive/negative/unavailable). Lab fixture testing is not applicable because the cron collector reads system cron directories from the live system, not from --root fixtures.",
+      "description": "Unit tests cover cron file ownership, permissions and referenced-script writability."
     },
     {
       "id": "CTR-001",
@@ -1284,7 +1336,7 @@
       "category": "containers",
       "environment": "unsupported",
       "supported": false,
-      "reason": "Container runtime configuration analysis is scheduled for M4. The JSON fixture is synthetic; no container escape is attempted.",
+      "reason": "NULQ-SYS-008 exists and is unit-tested plus lab-asserted (SYS-008 scenario). Deeper container runtime configuration analysis (dangerous mounts, capability configuration) is scheduled for M4. The JSON fixture is synthetic; no container escape is attempted.",
       "description": "Would verify privileged-container indicators, dangerous mounts and capability configuration."
     }
   ]
