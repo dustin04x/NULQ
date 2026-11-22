@@ -241,6 +241,9 @@ func normalizeDeterministic(report *models.Report, ref time.Time) {
 	for i := range report.Observations {
 		report.Observations[i].CollectedAt = ref.UTC()
 	}
+	for i := range report.Evidence {
+		report.Evidence[i].CollectedAt = ref.UTC()
+	}
 }
 func hostInfo(observations []models.Observation) models.HostInfo {
 	host := models.HostInfo{

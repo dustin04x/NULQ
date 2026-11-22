@@ -51,6 +51,11 @@ func (r pathEntryRule) Evaluate(ctx context.Context, obs interfaces.ObservationS
 		value, _ := entry.Attr(models.AttrPathEntry)
 		index, _ := entry.Attr(models.AttrPathIndex)
 
+		pathExists, _ := entry.Attr(models.AttrPathExists)
+		if pathExists == "false" && value != "" {
+			continue
+		}
+
 		var title, explanation, impact, remediation string
 
 		if value == "" {

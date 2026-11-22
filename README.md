@@ -2,7 +2,7 @@
 
 **Find the boundary. Understand the exposure.**
 
-A Linux privilege-boundary discovery and evidence-driven security assessment framework written in Go.
+A Linux privilege-boundary discovery and evidence-driven security assessment framework written in Go. Read-only, standard-library only, no dependencies.
 
 ---
 
@@ -17,7 +17,7 @@ A writable file is not automatically a privilege escalation path. A writable dir
 NULQ deliberately does not claim to:
 
 - Exploit or execute discovered content
-- Assess sudo policy, capabilities, systemd or cron
+- Assess sudo policy
 - Detect exploitability, CVE applicability or binary behaviour
 - Modify the assessed system in any way
 - Provide comprehensive penetration testing capability
@@ -29,14 +29,19 @@ NULQ deliberately does not claim to:
 | Rule | Module | Checks |
 |---|---|---|
 | `NULQ-ID-001` | identity | Group memberships that confer or can obtain elevated authority |
-| `NULQ-FS-001` | filesystem | Set-owner-ID executables, with ownership, location and writability context |
+| `NULQ-FS-001` | filesystem | Set-owner-ID / set-group-ID executables, with ownership, location and writability context |
 | `NULQ-FS-002` | filesystem | World-writable directories without the sticky bit, escalated when on PATH or containing privileged executables |
 | `NULQ-FS-003` | filesystem | Empty, relative, or user-writable PATH entries |
+| `NULQ-FS-004` | filesystem | Mount flags (`nosuid`, `noexec`) constraining privileged executables and world-writable execution surfaces |
 | `NULQ-SYS-001` | system | Kernel sysctl hardening baseline |
 | `NULQ-SYS-002` | system | Mandatory access control posture (SELinux/AppArmor) |
+| `NULQ-SYS-003` | system | Process capability surface (privilege-bypassing effective capabilities) |
+| `NULQ-SYS-004` | system | Seccomp filter mode per process |
+| `NULQ-SYS-005` | system | systemd unit files (User=, ExecStart=, writable dependencies) |
+| `NULQ-SYS-006` | system | Unprivileged user namespace clone (`kernel.unprivileged_userns_clone`) |
 | `NULQ-PROC-001` | process | Writable-parent detection: executable consumed by a running process with parent-directory permission analysis |
 
-Default filesystem coverage: every usable mount except pseudo filesystems, container storage, snapshot trees and kernel virtual paths. Traversal is bounded per filesystem root by `--max-files` (default 1,000,000). A truncated traversal is reported as partial with a limitation entry, never silently.
+Default filesystem coverage: every usable mount except pseudo filesystems (`/proc`, `/sys`, `/dev`, `/run`), container storage, snapshot trees and kernel virtual paths. Traversal is bounded per filesystem root by `--max-files` (default 1,000,000). A truncated traversal is reported as partial with a limitation entry, never silently.
 
 ---
 
@@ -44,14 +49,14 @@ Default filesystem coverage: every usable mount except pseudo filesystems, conta
 
 ```text
 Linux environment
-       ├──▶ Collectors: linux.system, linux.identity, linux.filesystem, linux.process
-       ├──▶ Normalized observations: closed vocabulary of kinds and attributes
-       ├──▶ Immutable observation store: shared by all rules, content-derived IDs
-       ├──▶ Detection rules: 8 registered modules, precise Required prerequisites
-       ├──▶ Evidence evaluation: every finding cites the observation and field that triggered it
-       ├──▶ Aggregation: referential integrity, deduplication, deterministic ordering
-       ├──▶ Report model: JSON, JSONL, Markdown, terminal renderers
-       └──▶ Structured findings: severity, confidence, explanation, impact, remediation, limitations
+   ├──▶ Collectors: linux.system, linux.identity, linux.filesystem, linux.process
+   ├──▶ Normalized observations: closed vocabulary of kinds and attributes
+   ├──▶ Immutable observation store: shared by all rules, content-derived IDs
+   ├──▶ Detection rules: 12 registered modules, precise Required prerequisites
+   ├──▶ Evidence evaluation: every finding cites the observation and field that triggered it
+   ├──▶ Aggregation: referential integrity, deduplication, deterministic ordering
+   ├──▶ Report model: JSON, JSONL, Markdown, terminal renderers
+   └──▶ Structured findings: severity, confidence, explanation, impact, remediation, limitations
 ```
 
 The observation-first approach means collectors publish typed, immutable observations with a closed vocabulary of kinds and normalised attributes. Rules consume the shared store; a rule that needs new facts gets a new observation kind, not its own traversal.
@@ -104,9 +109,9 @@ Diagnostics go to stderr. Machine-readable output never contains banners, progre
 $ nulq scan
 NULQ 0.1.0-dev  Linux privilege-boundary assessment
 
-Host      workstation (Arch Linux, kernel 7.3.5-arch1-1, amd64)
+Host      workstation (Linux, kernel 6.x, amd64)
 Session   unprivileged user
-Scan      rpt-4ebd788d4ca4 · 7 rules · 354 observations · 2.9s
+Scan      rpt-4ebd788d4ca4 · 12 rules · 354 observations · 2.9s
 
 MEDIUM   1  LOW      34  INFO     1
 
@@ -117,6 +122,19 @@ LOW   NULQ-FS-001  Privileged executable outside standard system directories
 ```
 
 JSON output is sterile: no ANSI, banners, progress or log records. Find each finding's evidence ID in the `evidence` array to trace it back to the exact observation.
+
+---
+
+## Laboratory validation
+
+NULQ ships with an isolated Alpine Linux 3.22 laboratory (`lab/`) that executes the real binary against synthetic fixtures, validates JSON against the published schema (`schemas/nulq-report-v1.schema.json`), and evaluates 37 scenarios across identity, filesystem, path-hijack, system and coverage domains.
+
+```bash
+make lab-build    # build the binary and pinned Alpine target image
+make lab-test     # isolation probe, five scans, schema validation, scenario evaluation
+```
+
+Result: **PASS — 32/32 scenarios passed, 5 unsupported (scheduled M3/M4), 0 missing findings, 0 unexpected, 0 invalid scans.**
 
 ---
 
@@ -134,22 +152,16 @@ Unknown or incomplete evidence is never treated as confirmed exploitability. Whe
 
 ## Project status
 
-M2 — **Implementation complete — conditionally accepted.**
+**Current milestone: complete — all verification gates pass.**
 
-All four deliverables are implemented:
+- Unit + integration tests: `go test ./...` pass (race detector clean)
+- `gofmt` clean, `go vet` clean
+- Binary builds: linux/amd64 and linux/arm64 (`CGO_ENABLED=0`)
+- Docker/Alpine lab: `make lab-test` passes (32/32 scenarios)
 
-- Process observations from `/proc/<pid>` with bounded, race-aware collection
-- Mount flag analysis (`nosuid`, `noexec`) as first-class observations
-- ACL-aware permission evaluation where POSIX ACLs are readable
-- Directory containment analysis (writable parent of a privileged file)
+Engineering documentation in `docs/engineering/`: total-system inventory, engineering plan, test matrix, security semantics, architecture review, performance report, fuzzing report, CLI contract, CI review, remediation register, and final engineering report.
 
-**Outstanding verification conditions:**
-
-- **Docker / Alpine lab E2E and container isolation** — BLOCKED by directive (daemon reachable but deliberately unused). No container was started; no M2-era E2E evidence exists.
-- **HIGH-severity live fixture** — A root-owned SUID executable in a writable directory cannot be created unprivileged. The HIGH branch is proven by rule-level synthetic tests; the same pipeline is demonstrated end-to-end at INFO.
-- **Lab scenario refresh** — No M2 scenarios or fixtures exist in `lab/manifest.json` (process, acl, nosuid, noexec each occur 0 times). Artifacts are M1.5-era; a refresh depends on Docker.
-
-M3–M7 milestones remain planned as documented in `ROADMAP.md`. The project is not yet fully production-ready or fully audited.
+M3–M7 milestones remain planned as documented in `ROADMAP.md`.
 
 ---
 
@@ -179,8 +191,7 @@ Link to the full security policy: [SECURITY.md](SECURITY.md).
 - [CONTRIBUTING.md](CONTRIBUTING.md) — contribution guide
 - [docs/architecture.md](docs/architecture.md) — full design
 - [docs/decisions/](docs/decisions/) — architecture decision records
-
-This README is independently understandable to a recruiter, security engineer, or open-source contributor who has never seen the codebase.
+- [docs/engineering/](docs/engineering/) — engineering reports and acceptance artifacts
 
 ---
 

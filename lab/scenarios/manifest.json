@@ -44,6 +44,10 @@
           {
             "rule_id": "NULQ-SYS-001",
             "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-006",
+            "match": "any"
           }
         ]
       }
@@ -135,6 +139,10 @@
         "allowed_findings": [
           {
             "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-006",
             "match": "any"
           }
         ]
@@ -393,6 +401,10 @@
         "allowed_findings": [
           {
             "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-006",
             "match": "any"
           }
         ]
@@ -829,6 +841,10 @@
             "rule_id": "NULQ-FS-001",
             "match": "exact",
             "resource": "/usr/lib/lab/standard-suid"
+          },
+          {
+            "rule_id": "NULQ-FS-004",
+            "match": "any"
           }
         ]
       }

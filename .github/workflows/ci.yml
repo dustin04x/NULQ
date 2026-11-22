@@ -60,17 +60,20 @@ jobs:
         env:
           PATH: /tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
         run: |
-          ./bin/nulq version
-          ./bin/nulq rules list
-          ./bin/nulq system info --format json > /tmp/system.json
-          ./bin/nulq scan --format json --output /tmp/report.json --modules identity,filesystem,system
+          /tmp/nulq-amd64 version
+          /tmp/nulq-amd64 rules list
+          /tmp/nulq-amd64 system info --format json > /tmp/system.json
+          /tmp/nulq-amd64 scan --format json --output /tmp/report.json --modules identity,filesystem,system
 
       - name: Fail-on threshold contract check
         env:
           FIXTURE_ROOT: /tmp/nulq-ci-test-root
         run: |
-          # Ensure fixture directory exists
-          mkdir -p "$FIXTURE_ROOT"
+          # Ensure fixture directory exists and contains a world-writable
+          # directory (produces a MEDIUM finding) so the fail-on contract
+          # can be exercised against real findings.
+          mkdir -p "$FIXTURE_ROOT/shared"
+          chmod 777 "$FIXTURE_ROOT/shared"
           
           # The fixture produces max severity MEDIUM, so:
           # --fail-on info/low/medium should exit 3 (finding at/above threshold)
