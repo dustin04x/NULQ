@@ -168,14 +168,14 @@ func TestScanFailOnContract(t *testing.T) {
 
 	app, _, _ := newTestApp()
 	if code := app.Run(context.Background(), []string{
-		"scan", "--root", root, "--format", "json", "--fail-on", "medium",
+		"scan", "--root", root, "--modules", "filesystem", "--format", "json", "--fail-on", "medium",
 	}); code != ExitFindings {
 		t.Fatalf("fail-on medium: exit code = %d, want %d", code, ExitFindings)
 	}
 
 	app, _, _ = newTestApp()
 	if code := app.Run(context.Background(), []string{
-		"scan", "--root", root, "--format", "json", "--fail-on", "high",
+		"scan", "--root", root, "--modules", "filesystem", "--format", "json", "--fail-on", "high",
 	}); code != ExitOK {
 		t.Fatalf("fail-on high: exit code = %d, want %d", code, ExitOK)
 	}
@@ -191,7 +191,7 @@ func testFailOnContractCoverages(t *testing.T, threshold string, expectExit int)
 
 	app, _, _ := newTestApp()
 	code := app.Run(context.Background(), []string{
-		"scan", "--root", root, "--format", "json",
+		"scan", "--root", root, "--modules", "filesystem", "--format", "json",
 		"--fail-on", threshold,
 	})
 	if code != expectExit {
