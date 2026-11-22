@@ -5,6 +5,8 @@ Changelog; versions follow Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-22
+
 ### Added
 
 - Report coverage contract (`coverage` object) separating execution success
@@ -125,6 +127,3 @@ Changelog; versions follow Semantic Versioning.
 - Non-directory bind mounts (for example a swapfile) produced meaningless
   truncated scan summaries.
 
-## [0.1.0] — not yet released
-
-See Unreleased. The version is released only after M7 quality gates pass.
