@@ -140,7 +140,9 @@
             "system.info", "system.security_control", "system.sysctl",
             "identity.execution_context", "identity.group_membership",
             "filesystem.file", "filesystem.directory", "filesystem.path_entry",
-            "filesystem.mount", "filesystem.scan", "process.info"
+            "filesystem.mount", "filesystem.scan", "process.info",
+            "filesystem.capability", "identity.sudo_rule", "identity.cron_job",
+            "system.container_indicator", "system.kernel_mitigation"
           ]
         },
         "resource": { "type": "string" },

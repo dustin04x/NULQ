@@ -10,6 +10,7 @@ package filesystem
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -20,12 +21,55 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
+	"unsafe"
 
 	nulqerr "github.com/dustin04x/nulq/internal/core/errors"
 	"github.com/dustin04x/nulq/internal/core/models"
 	"github.com/dustin04x/nulq/internal/platform/linux/acl"
 )
+
+// getxattr reads an extended attribute from a file using the Linux getxattr
+// syscall. It returns the attribute value or an error.
+func getxattr(path, attr string) ([]byte, error) {
+	buf := make([]byte, 256)
+	for {
+		ptr, err := unsafePtr(path)
+		if err != nil {
+			return nil, err
+		}
+		attrPtr, err := unsafePtr(attr)
+		if err != nil {
+			return nil, err
+		}
+		r0, _, e1 := syscall.Syscall6(
+			syscall.SYS_GETXATTR,
+			uintptr(ptr),
+			uintptr(attrPtr),
+			uintptr(unsafe.Pointer(&buf[0])),
+			uintptr(len(buf)),
+			0,
+			0,
+		)
+		if e1 != 0 {
+			if e1 == syscall.ERANGE {
+				buf = make([]byte, len(buf)*2)
+				continue
+			}
+			return nil, e1
+		}
+		return buf[:r0], nil
+	}
+}
+
+func unsafePtr(s string) (uintptr, error) {
+	if len(s) == 0 {
+		return 0, errors.New("empty string")
+	}
+	ptr := syscall.StringBytePtr(s)
+	return uintptr(unsafe.Pointer(ptr)), nil
+}
 
 const collectorName = "linux.filesystem"
 
@@ -314,6 +358,7 @@ func (c *Collector) fileObservation(path string, info fs.FileInfo, credentials C
 	obs.Set(models.AttrWritableByCurrentUser, boolString(credentials.CanWrite(info)))
 	c.applyPermissions(&obs, path, info, credentials)
 	c.applyMount(&obs, path, mounts)
+	c.applyFileCapabilities(&obs, path, info)
 	return obs
 }
 
@@ -437,6 +482,68 @@ func (c *Collector) applyMount(obs *models.Observation, path string, mounts []Mo
 	obs.Set(models.AttrNodev, boolString(mount.HasOption("nodev")))
 	obs.Set(models.AttrNoexec, boolString(mount.HasOption("noexec")))
 	obs.Set(models.AttrReadOnly, boolString(mount.HasOption("ro")))
+}
+
+// applyFileCapabilities reads the security.capability xattr for privileged
+// executables and records permitted, inheritable and effective sets as hex
+// strings. Unreadable or absent xattrs are left absent so a rule can
+// distinguish unknown from truly unprivileged.
+func (c *Collector) applyFileCapabilities(obs *models.Observation, path string, info fs.FileInfo) {
+	if !info.Mode().IsRegular() {
+		return
+	}
+	if info.Mode()&(fs.ModeSetuid|fs.ModeSetgid) == 0 && info.Mode().Perm()&0o111 == 0 {
+		return
+	}
+	xattr, err := readFileCapabilityXattr(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) || errors.Is(err, fs.ErrPermission) {
+			return
+		}
+		return
+	}
+	if xattr == nil {
+		return
+	}
+	obs.Set(models.AttrFileCapPermitted, xattr.Permitted)
+	obs.Set(models.AttrFileCapInheritable, xattr.Inheritable)
+	obs.Set(models.AttrFileCapEffective, xattr.Effective)
+}
+
+// fileCapability is a parsed security.capability xattr value.
+type fileCapability struct {
+	Permitted   string
+	Inheritable string
+	Effective   string
+}
+
+func readFileCapabilityXattr(path string) (*fileCapability, error) {
+	data, err := getxattr(path, "security.capability")
+	if err != nil {
+		return nil, err
+	}
+	if len(data) < 20 {
+		return nil, os.ErrNotExist
+	}
+	// v2 magic: 4-byte version (little-endian u32) + 16-byte data.
+	version := binary.LittleEndian.Uint32(data[:4])
+	if version != 2 {
+		return nil, os.ErrNotExist
+	}
+	data = data[4:]
+	permitted := formatCapMask(binary.LittleEndian.Uint64(data[0:8]))
+	inheritable := formatCapMask(binary.LittleEndian.Uint64(data[8:16]))
+	effective := formatCapMask(binary.LittleEndian.Uint64(data[16:24]))
+	return &fileCapability{
+		Permitted:   permitted,
+		Inheritable: inheritable,
+		Effective:   effective,
+	}, nil
+}
+
+// formatCapMask renders a 64-bit capability mask as a 16-hex-digit string.
+func formatCapMask(mask uint64) string {
+	return strconv.FormatUint(mask, 16)
 }
 
 func containsPoint(points []string, want string) bool {

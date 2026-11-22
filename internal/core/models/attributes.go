@@ -164,6 +164,55 @@ const (
 	AttrSeccomp      = "seccomp"
 )
 
+// File capability metadata, read from security.capability xattr.
+// Values are hex strings as exposed by getfattr.
+const (
+	AttrFileCapPermitted   = "file_cap_permitted"
+	AttrFileCapInheritable = "file_cap_inheritable"
+	AttrFileCapEffective   = "file_cap_effective"
+)
+
+// Sudo rule metadata, read from /etc/sudoers and /etc/sudoers.d/.
+const (
+	AttrSudoUser     = "sudo_user"
+	AttrSudoHost     = "sudo_host"
+	AttrSudoRunAs    = "sudo_run_as"
+	AttrSudoCommands = "sudo_commands"
+	AttrSudoNoPasswd = "sudo_nopasswd"
+	AttrSudoOptions  = "sudo_options"
+)
+
+// Cron job metadata, read from cron directories and files.
+const (
+	AttrCronSchedule = "cron_schedule"
+	AttrCronCommand  = "cron_command"
+	AttrCronOwner    = "cron_owner"
+	AttrCronFile     = "cron_file"
+	AttrCronWritable = "cron_writable"
+)
+
+// Container and runtime indicators, read from filesystem and /proc/1.
+const (
+	AttrDockerSocket   = "docker_socket"
+	AttrContainerMount = "container_mount"
+	AttrContainerEnv   = "container_env"
+	AttrContainerImage = "container_image"
+)
+
+// Kernel mitigation metadata, read from /proc/sys/kernel and /sys/devices.
+const (
+	AttrMitigationName   = "mitigation_name"
+	AttrMitigationValue  = "mitigation_value"
+	AttrMitigationStatus = "mitigation_status"
+)
+
+// Security policy metadata, read from AppArmor/SELinux policy files.
+const (
+	AttrPolicyName   = "policy_name"
+	AttrPolicyStatus = "policy_status"
+	AttrPolicyPath   = "policy_path"
+)
+
 // Systemd unit security directives, read from unit files.
 const (
 	AttrSystemdUser                  = "systemd_user"

@@ -14,9 +14,12 @@ import (
 	"github.com/dustin04x/nulq/internal/core/interfaces"
 	"github.com/dustin04x/nulq/internal/core/models"
 	"github.com/dustin04x/nulq/internal/engine/executor"
+	"github.com/dustin04x/nulq/internal/platform/linux/container"
+	"github.com/dustin04x/nulq/internal/platform/linux/cron"
 	"github.com/dustin04x/nulq/internal/platform/linux/filesystem"
 	"github.com/dustin04x/nulq/internal/platform/linux/identity"
 	"github.com/dustin04x/nulq/internal/platform/linux/process"
+	"github.com/dustin04x/nulq/internal/platform/linux/sudo"
 	"github.com/dustin04x/nulq/internal/platform/linux/system"
 	"github.com/dustin04x/nulq/internal/platform/linux/systemd"
 	"github.com/dustin04x/nulq/internal/rules"
@@ -86,6 +89,15 @@ func Scan(ctx context.Context, cfg ScanConfig, logger *slog.Logger) (models.Repo
 	}
 	if needsSystemd(selected) {
 		collectors = append(collectors, systemd.NewCollector(systemd.Options{}, logger))
+	}
+	if needsSudo(selected) {
+		collectors = append(collectors, sudo.NewCollector())
+	}
+	if needsCron(selected) {
+		collectors = append(collectors, cron.NewCollector())
+	}
+	if needsContainer(selected) {
+		collectors = append(collectors, container.NewCollector())
 	}
 
 	engine := executor.New(selected, collectors, executor.Options{
@@ -309,6 +321,39 @@ func needsSystemd(selected []interfaces.Rule) bool {
 	for _, rule := range selected {
 		for _, kind := range rule.Metadata().Required {
 			if kind == models.KindSystemdUnit {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func needsSudo(selected []interfaces.Rule) bool {
+	for _, rule := range selected {
+		for _, kind := range rule.Metadata().Required {
+			if kind == models.KindSudoRule {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func needsCron(selected []interfaces.Rule) bool {
+	for _, rule := range selected {
+		for _, kind := range rule.Metadata().Required {
+			if kind == models.KindCronJob {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func needsContainer(selected []interfaces.Rule) bool {
+	for _, rule := range selected {
+		for _, kind := range rule.Metadata().Required {
+			if kind == models.KindContainerIndicator {
 				return true
 			}
 		}

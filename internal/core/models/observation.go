@@ -15,18 +15,24 @@ import (
 type Kind string
 
 const (
-	KindSystemInfo       Kind = "system.info"
-	KindSecurityControl  Kind = "system.security_control"
-	KindSysctl           Kind = "system.sysctl"
-	KindExecutionContext Kind = "identity.execution_context"
-	KindGroupMembership  Kind = "identity.group_membership"
-	KindFile             Kind = "filesystem.file"
-	KindDirectory        Kind = "filesystem.directory"
-	KindPathEntry        Kind = "filesystem.path_entry"
-	KindMount            Kind = "filesystem.mount"
-	KindFilesystemScan   Kind = "filesystem.scan"
-	KindProcess          Kind = "process.info"
-	KindSystemdUnit      Kind = "system.systemd_unit"
+	KindSystemInfo         Kind = "system.info"
+	KindSecurityControl    Kind = "system.security_control"
+	KindSysctl             Kind = "system.sysctl"
+	KindExecutionContext   Kind = "identity.execution_context"
+	KindGroupMembership    Kind = "identity.group_membership"
+	KindFile               Kind = "filesystem.file"
+	KindDirectory          Kind = "filesystem.directory"
+	KindPathEntry          Kind = "filesystem.path_entry"
+	KindMount              Kind = "filesystem.mount"
+	KindFilesystemScan     Kind = "filesystem.scan"
+	KindProcess            Kind = "process.info"
+	KindSystemdUnit        Kind = "system.systemd_unit"
+	KindFileCapability     Kind = "filesystem.capability"
+	KindSudoRule           Kind = "identity.sudo_rule"
+	KindCronJob            Kind = "identity.cron_job"
+	KindContainerIndicator Kind = "system.container_indicator"
+	KindKernelMitigation   Kind = "system.kernel_mitigation"
+	KindSecurityPolicy     Kind = "system.security_policy"
 )
 
 // AllKinds returns every observation kind in a stable order.
@@ -44,6 +50,12 @@ func AllKinds() []Kind {
 		KindFilesystemScan,
 		KindProcess,
 		KindSystemdUnit,
+		KindFileCapability,
+		KindSudoRule,
+		KindCronJob,
+		KindContainerIndicator,
+		KindKernelMitigation,
+		KindSecurityPolicy,
 	}
 }
 

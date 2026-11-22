@@ -21,6 +21,7 @@ func All() []interfaces.Rule {
 		fsrules.NewWorldWritableRule(),
 		fsrules.NewPathEntryRule(),
 		fsrules.NewMountFlagsRule(),
+		fsrules.NewFileCapabilityRule(),
 		processrules.NewWritableParentRule(),
 		sysrules.NewSysctlRule(),
 		sysrules.NewMACRule(),
@@ -28,6 +29,10 @@ func All() []interfaces.Rule {
 		sysrules.NewSeccompRule(),
 		sysrules.NewSystemdRule(),
 		sysrules.NewUsernsRule(),
+		identityrules.NewSudoRule(),
+		identityrules.NewCronRule(),
+		sysrules.NewContainerIndicatorRule(),
+		sysrules.NewKernelMitigationRule(),
 	}
 }
 

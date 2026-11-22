@@ -144,6 +144,14 @@
           {
             "rule_id": "NULQ-SYS-006",
             "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-007",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-008",
+            "match": "any"
           }
         ]
       }
@@ -335,7 +343,17 @@
             "max": 1
           }
         ],
-        "max_severity": "LOW"
+        "max_severity": "MEDIUM",
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-SYS-007",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-008",
+            "match": "any"
+          }
+        ]
       }
     },
     {
@@ -405,6 +423,14 @@
           },
           {
             "rule_id": "NULQ-SYS-006",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-007",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-008",
             "match": "any"
           }
         ]
@@ -768,7 +794,17 @@
             "min": 10
           }
         ],
-        "max_severity": "LOW"
+        "max_severity": "MEDIUM",
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-SYS-007",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-008",
+            "match": "any"
+          }
+        ]
       }
     },
     {

@@ -29,16 +29,21 @@ NULQ deliberately does not claim to:
 | Rule | Module | Checks |
 |---|---|---|
 | `NULQ-ID-001` | identity | Group memberships that confer or can obtain elevated authority |
+| `NULQ-ID-002` | identity | Sudoers policy inventory (passwordless/root execution rules) |
+| `NULQ-ID-003` | identity | Cron job inventory (writable job files, scheduled commands) |
 | `NULQ-FS-001` | filesystem | Set-owner-ID / set-group-ID executables, with ownership, location and writability context |
 | `NULQ-FS-002` | filesystem | World-writable directories without the sticky bit, escalated when on PATH or containing privileged executables |
 | `NULQ-FS-003` | filesystem | Empty, relative, or user-writable PATH entries |
 | `NULQ-FS-004` | filesystem | Mount flags (`nosuid`, `noexec`) constraining privileged executables and world-writable execution surfaces |
+| `NULQ-FS-005` | filesystem | File capability inventory (`security.capability` xattr on executables) |
 | `NULQ-SYS-001` | system | Kernel sysctl hardening baseline |
 | `NULQ-SYS-002` | system | Mandatory access control posture (SELinux/AppArmor) |
 | `NULQ-SYS-003` | system | Process capability surface (privilege-bypassing effective capabilities) |
 | `NULQ-SYS-004` | system | Seccomp filter mode per process |
 | `NULQ-SYS-005` | system | systemd unit files (User=, ExecStart=, writable dependencies) |
 | `NULQ-SYS-006` | system | Unprivileged user namespace clone (`kernel.unprivileged_userns_clone`) |
+| `NULQ-SYS-007` | system | Kernel hardware vulnerability mitigations (Spectre, Meltdown, L1TF, MDS, etc.) |
+| `NULQ-SYS-008` | system | Container runtime indicators (Docker socket, containerd socket, marker files) |
 | `NULQ-PROC-001` | process | Writable-parent detection: executable consumed by a running process with parent-directory permission analysis |
 
 Default filesystem coverage: every usable mount except pseudo filesystems (`/proc`, `/sys`, `/dev`, `/run`), container storage, snapshot trees and kernel virtual paths. Traversal is bounded per filesystem root by `--max-files` (default 1,000,000). A truncated traversal is reported as partial with a limitation entry, never silently.
@@ -49,10 +54,10 @@ Default filesystem coverage: every usable mount except pseudo filesystems (`/pro
 
 ```text
 Linux environment
-   ├──▶ Collectors: linux.system, linux.identity, linux.filesystem, linux.process
+   ├──▶ Collectors: linux.system, linux.identity, linux.filesystem, linux.process, linux.sudo, linux.cron, linux.container, linux.systemd
    ├──▶ Normalized observations: closed vocabulary of kinds and attributes
    ├──▶ Immutable observation store: shared by all rules, content-derived IDs
-   ├──▶ Detection rules: 12 registered modules, precise Required prerequisites
+   ├──▶ Detection rules: 17 registered modules, precise Required prerequisites
    ├──▶ Evidence evaluation: every finding cites the observation and field that triggered it
    ├──▶ Aggregation: referential integrity, deduplication, deterministic ordering
    ├──▶ Report model: JSON, JSONL, Markdown, terminal renderers
@@ -152,12 +157,14 @@ Unknown or incomplete evidence is never treated as confirmed exploitability. Whe
 
 ## Project status
 
-**Current milestone: complete — all verification gates pass.**
+**Current milestone: M2 complete — all verification gates pass.**
 
 - Unit + integration tests: `go test ./...` pass (race detector clean)
 - `gofmt` clean, `go vet` clean
 - Binary builds: linux/amd64 and linux/arm64 (`CGO_ENABLED=0`)
-- Docker/Alpine lab: `make lab-test` passes (32/32 scenarios)
+- Docker/Alpine lab: `make lab-test` passes (32/32 scenarios, 5 unscheduled M3/M4)
+
+17 rules across identity, filesystem, process and system domains. 8 collectors (system, identity, filesystem, process, sudo, cron, container, systemd).
 
 Engineering documentation in `docs/engineering/`: total-system inventory, engineering plan, test matrix, security semantics, architecture review, performance report, fuzzing report, CLI contract, CI review, remediation register, and final engineering report.
 

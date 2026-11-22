@@ -51,6 +51,7 @@ func (c *Collector) Collect(ctx context.Context) ([]models.Observation, error) {
 	observations = append(observations, c.systemInfo(now))
 	observations = append(observations, c.securityControls(now)...)
 	observations = append(observations, c.sysctls(now)...)
+	observations = append(observations, c.kernelMitigations(now)...)
 	return observations, nil
 }
 
@@ -230,6 +231,77 @@ func (c *Collector) sysctls(now time.Time) []models.Observation {
 		observations = append(observations, obs)
 	}
 	return observations
+}
+
+// kernelMitigations reads hardware vulnerability mitigations from sysfs.
+func (c *Collector) kernelMitigations(now time.Time) []models.Observation {
+	vulnDir := c.sysRoot + "/devices/system/cpu/vulnerabilities/"
+	entries, err := os.ReadDir(vulnDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return []models.Observation{models.UnavailableObservation(
+			models.KindKernelMitigation, vulnDir, collectorName, now,
+			models.ObservationError{Class: string(nulqerr.ClassOf(err)), Message: err.Error()})}
+	}
+
+	observations := make([]models.Observation, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		path := vulnDir + name
+		obs := models.NewObservation(models.KindKernelMitigation, name, collectorName, now, nil)
+		obs.Set(models.AttrMitigationName, name)
+		obs.Set(models.AttrSource, path)
+
+		value, err := readTrimmedFile(path)
+		switch {
+		case err == nil:
+			obs.Set(models.AttrMitigationValue, value)
+			obs.Set(models.AttrMitigationStatus, statusForMitigation(value))
+		case os.IsNotExist(err):
+			obs.Status = models.StatusUnavailable
+			obs.Error = &models.ObservationError{
+				Class:   string(nulqerr.ClassNotFound),
+				Message: "mitigation status file does not exist",
+			}
+		case os.IsPermission(err):
+			obs.Status = models.StatusUnavailable
+			obs.Error = &models.ObservationError{
+				Class:   string(nulqerr.ClassPermissionDenied),
+				Message: "mitigation status is not readable",
+			}
+		default:
+			obs.Status = models.StatusUnavailable
+			obs.Error = &models.ObservationError{
+				Class:   string(nulqerr.ClassOf(err)),
+				Message: err.Error(),
+			}
+		}
+		observations = append(observations, obs)
+	}
+	return observations
+}
+
+// statusForMitigation normalises a kernel mitigation status string.
+func statusForMitigation(value string) string {
+	switch strings.TrimSpace(value) {
+	case "Not affected":
+		return "not_affected"
+	case "Vulnerable":
+		return "vulnerable"
+	default:
+		if strings.HasPrefix(value, "Mitigation:") {
+			return "mitigation_active"
+		}
+		if strings.HasPrefix(value, "Vulnerable:") {
+			return "vulnerable"
+		}
+		return "unknown"
+	}
 }
 
 func readTrimmedFile(path string) (string, error) {
