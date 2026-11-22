@@ -50,6 +50,11 @@ Fields:
 | `filesystem.path_entry` | literal entry (or placeholder for empty) | path index, entry, exists, is_directory, symlink, symlink target, mode, owner, writable_by_current_user |
 | `filesystem.mount` | mount point | device, fstype, options, read_only |
 | `filesystem.scan` | root path (`mounts` for the mount table) | files_visited, dirs_visited, scan_errors, truncated |
+| `filesystem.capability` | absolute executable path | file_cap_permitted, file_cap_inheritable, file_cap_effective |
+| `identity.sudo_rule` | `/etc/sudoers` or `/etc/sudoers.d/<file>` | sudo_user, sudo_host, sudo_run_as, sudo_commands, sudo_nopasswd, sudo_options |
+| `identity.cron_job` | absolute cron file path | cron_schedule, cron_command, cron_owner, cron_file, cron_writable |
+| `system.container_indicator` | `/var/run/docker.sock`, `/run/containerd/containerd.sock`, `/.dockerenv`, `/.containerize` | docker_socket, container_mount, container_env, container_image |
+| `system.kernel_mitigation` | `/sys/devices/system/cpu/vulnerabilities/<name>` | mitigation_name, mitigation_value, mitigation_status |
 
 Only **notable** files and directories are published: set-owner-ID regular
 files and world-writable directories. Emitting every file would inflate memory

@@ -23,6 +23,9 @@ type Collector struct {
 	now      func() time.Time
 }
 
+// SetCronDirs lets callers override the cron directories (tests).
+func (c *Collector) SetCronDirs(dirs []string) { c.cronDirs = dirs }
+
 // NewCollector returns a collector that reads cron directories.
 func NewCollector() *Collector {
 	return &Collector{

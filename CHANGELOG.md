@@ -38,6 +38,7 @@ Changelog; versions follow Semantic Versioning.
 - Bounded-concurrency engine with per-collector and per-rule timeouts,
   context cancellation, panic isolation and per-rule failure isolation.
 - Aggregation with referential-integrity enforcement, deduplication and
+
   deterministic ordering.
 - Rules: `NULQ-ID-001` privileged group membership, `NULQ-FS-001` set-owner-ID
   executable inventory, `NULQ-FS-002` world-writable directory without sticky
@@ -56,6 +57,15 @@ Changelog; versions follow Semantic Versioning.
 - Tests: model invariants, registry, engine isolation/timeouts, aggregation,
   collector fixtures, all rules (positive and negative), renderers, CLI exit
   codes, end-to-end scenarios, mount-parser fuzzing.
+- Rule expansion (linpeas-style detection): `NULQ-FS-005` file capability
+  inventory (`security.capability` xattr), `NULQ-ID-002` sudoers policy
+  inventory, `NULQ-ID-003` cron job inventory, `NULQ-SYS-007` kernel hardware
+  mitigation status, `NULQ-SYS-008` container runtime indicator detection.
+  New observation kinds `filesystem.capability`, `identity.sudo_rule`,
+  `identity.cron_job`, `system.container_indicator` and `system.kernel_mitigation`
+  with new `linux.filesystem`, `linux.sudo`, `linux.cron` and `linux.container`
+  collectors. Rule count is 17 across 8 collectors. README coverage table and
+  `docs/observation-model.md` updated accordingly.
 
 ### Fixed
 
