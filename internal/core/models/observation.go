@@ -33,6 +33,9 @@ const (
 	KindContainerIndicator Kind = "system.container_indicator"
 	KindKernelMitigation   Kind = "system.kernel_mitigation"
 	KindSecurityPolicy     Kind = "system.security_policy"
+	KindUserAccount        Kind = "identity.user_account"
+	KindSSHDConfig         Kind = "system.sshd_config"
+	KindSSHAuthorizedKeys  Kind = "identity.ssh_authorized_keys"
 )
 
 // AllKinds returns every observation kind in a stable order.
@@ -56,6 +59,9 @@ func AllKinds() []Kind {
 		KindContainerIndicator,
 		KindKernelMitigation,
 		KindSecurityPolicy,
+		KindUserAccount,
+		KindSSHDConfig,
+		KindSSHAuthorizedKeys,
 	}
 }
 

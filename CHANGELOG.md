@@ -59,12 +59,17 @@ Changelog; versions follow Semantic Versioning.
   codes, end-to-end scenarios, mount-parser fuzzing.
 - Rule expansion (linpeas-style detection): `NULQ-FS-005` file capability
   inventory (`security.capability` xattr), `NULQ-ID-002` sudoers policy
-  inventory, `NULQ-ID-003` cron job inventory, `NULQ-SYS-007` kernel hardware
-  mitigation status, `NULQ-SYS-008` container runtime indicator detection.
-  New observation kinds `filesystem.capability`, `identity.sudo_rule`,
-  `identity.cron_job`, `system.container_indicator` and `system.kernel_mitigation`
-  with new `linux.filesystem`, `linux.sudo`, `linux.cron` and `linux.container`
-  collectors. Rule count is 17 across 8 collectors. README coverage table and
+  inventory, `NULQ-ID-003` cron job inventory, `NULQ-ID-004` non-root UID-0
+  accounts, `NULQ-ID-006` writable SSH authorized_keys, `NULQ-SYS-007`
+  kernel hardware mitigation status, `NULQ-SYS-008` container runtime
+  indicator detection, `NULQ-SYS-009` sshd_config hardening (PermitRootLogin,
+  PasswordAuthentication, X11Forwarding). New observation kinds
+  `filesystem.capability`, `identity.sudo_rule`, `identity.cron_job`,
+  `identity.user_account`, `identity.ssh_authorized_keys`,
+  `system.container_indicator`, `system.kernel_mitigation` and
+  `system.sshd_config` with new `linux.filesystem`, `linux.sudo`,
+  `linux.cron`, `linux.sshd` and `linux.container` collectors. Rule count is
+  20 across 9 collectors. README coverage table and
   `docs/observation-model.md` updated accordingly.
 
 ### Fixed

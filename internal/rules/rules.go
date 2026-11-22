@@ -31,8 +31,11 @@ func All() []interfaces.Rule {
 		sysrules.NewUsernsRule(),
 		identityrules.NewSudoRule(),
 		identityrules.NewCronRule(),
+		identityrules.NewUIDZeroRule(),
+		identityrules.NewAuthorizedKeysRule(),
 		sysrules.NewContainerIndicatorRule(),
 		sysrules.NewKernelMitigationRule(),
+		sysrules.NewSSHDConfigRule(),
 	}
 }
 

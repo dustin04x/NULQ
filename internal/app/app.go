@@ -19,6 +19,7 @@ import (
 	"github.com/dustin04x/nulq/internal/platform/linux/filesystem"
 	"github.com/dustin04x/nulq/internal/platform/linux/identity"
 	"github.com/dustin04x/nulq/internal/platform/linux/process"
+	"github.com/dustin04x/nulq/internal/platform/linux/sshd"
 	"github.com/dustin04x/nulq/internal/platform/linux/sudo"
 	"github.com/dustin04x/nulq/internal/platform/linux/system"
 	"github.com/dustin04x/nulq/internal/platform/linux/systemd"
@@ -98,6 +99,9 @@ func Scan(ctx context.Context, cfg ScanConfig, logger *slog.Logger) (models.Repo
 	}
 	if needsContainer(selected) {
 		collectors = append(collectors, container.NewCollector())
+	}
+	if needsSSHD(selected) {
+		collectors = append(collectors, sshd.NewCollector())
 	}
 
 	engine := executor.New(selected, collectors, executor.Options{
@@ -354,6 +358,17 @@ func needsContainer(selected []interfaces.Rule) bool {
 	for _, rule := range selected {
 		for _, kind := range rule.Metadata().Required {
 			if kind == models.KindContainerIndicator {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func needsSSHD(selected []interfaces.Rule) bool {
+	for _, rule := range selected {
+		for _, kind := range rule.Metadata().Required {
+			if kind == models.KindSSHDConfig || kind == models.KindSSHAuthorizedKeys {
 				return true
 			}
 		}

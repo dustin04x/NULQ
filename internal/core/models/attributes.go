@@ -223,6 +223,28 @@ const (
 	AttrSystemdCapabilityBoundingSet = "systemd_capability_bounding_set"
 )
 
+// User account metadata, read from /etc/passwd.
+const (
+	AttrUserName           = "user_name"
+	AttrUserUID            = "user_uid"
+	AttrUserGID            = "user_gid"
+	AttrUserShell          = "user_shell"
+	AttrUserHome           = "user_home"
+	AttrUserPasswordStatus = "user_password_status"
+)
+
+// SSH daemon configuration metadata, read from /etc/ssh/sshd_config.
+const (
+	AttrSSHDirective = "sshd_directive"
+	AttrSSHValue     = "sshd_value"
+)
+
+// SSH authorized keys metadata, read from user home directories.
+const (
+	AttrAuthKeysPath     = "auth_keys_path"
+	AttrAuthKeysWritable = "auth_keys_writable"
+)
+
 // Resource kinds identify what a finding is about. They are a small closed
 // vocabulary so downstream consumers and the relationship graph can reason
 // about findings without parsing free-form paths.

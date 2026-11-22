@@ -22,15 +22,17 @@ const collectorName = "linux.identity"
 // Collector gathers real and effective credentials, supplementary groups,
 // the process umask and namespace identifiers.
 type Collector struct {
-	procRoot string
-	now      func() time.Time
+	procRoot   string
+	passwdPath string
+	now        func() time.Time
 }
 
 // NewCollector returns a collector for the current process.
 func NewCollector() *Collector {
 	return &Collector{
-		procRoot: "/proc",
-		now:      func() time.Time { return time.Now().UTC() },
+		procRoot:   "/proc",
+		passwdPath: "/etc/passwd",
+		now:        func() time.Time { return time.Now().UTC() },
 	}
 }
 
@@ -119,6 +121,54 @@ func (c *Collector) Collect(ctx context.Context) ([]models.Observation, error) {
 	observations := make([]models.Observation, 0, 1+len(memberships))
 	observations = append(observations, contextObs)
 	observations = append(observations, memberships...)
+
+	accounts, err := c.userAccounts(now)
+	if err == nil {
+		observations = append(observations, accounts...)
+	}
+
+	return observations, nil
+}
+
+// SetPasswdPath lets callers override the /etc/passwd path (tests).
+func (c *Collector) SetPasswdPath(path string) { c.passwdPath = path }
+
+// userAccounts reads /etc/passwd and emits one observation per account.
+// Password hashes are never recorded: only the password status field (x, !,
+// locked or present) is captured.
+func (c *Collector) userAccounts(now time.Time) ([]models.Observation, error) {
+	file, err := os.Open(c.passwdPath)
+	if err != nil {
+		return nil, nulqerr.Classify("collect", collectorName, err)
+	}
+	defer file.Close()
+
+	var observations []models.Observation
+	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		fields := strings.Split(line, ":")
+		if len(fields) < 7 {
+			continue
+		}
+		obs := models.NewObservation(models.KindUserAccount, fields[0], collectorName, now, nil)
+		obs.Set(models.AttrUserName, fields[0])
+		obs.Set(models.AttrUserPasswordStatus, fields[1])
+		obs.Set(models.AttrUserUID, fields[2])
+		obs.Set(models.AttrUserGID, fields[3])
+		obs.Set(models.AttrUserShell, fields[6])
+		if len(fields) > 5 {
+			obs.Set(models.AttrUserHome, fields[5])
+		}
+		observations = append(observations, obs)
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, nulqerr.Classify("collect", collectorName, err)
+	}
 	return observations, nil
 }
 

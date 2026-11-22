@@ -142,7 +142,8 @@
             "filesystem.file", "filesystem.directory", "filesystem.path_entry",
             "filesystem.mount", "filesystem.scan", "process.info",
             "filesystem.capability", "identity.sudo_rule", "identity.cron_job",
-            "system.container_indicator", "system.kernel_mitigation"
+            "system.container_indicator", "system.kernel_mitigation",
+            "identity.user_account", "system.sshd_config", "identity.ssh_authorized_keys"
           ]
         },
         "resource": { "type": "string" },
