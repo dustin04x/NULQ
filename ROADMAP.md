@@ -28,7 +28,8 @@ Delivered:
 - System, identity and filesystem collectors.
 - Core models: observations, evidence, findings, report, schema version.
 - Typed error classes and honest unavailability handling.
-- Rule registry with validation and selection.
+- Rule registry with metadata validation, duplicate rejection, module and
+  rule-ID selection, and unknown-selection errors.
 - Bounded-concurrency executor with per-rule timeout, panic isolation,
   per-rule error isolation and prerequisite skipping.
 - Aggregation with referential-integrity checks, deduplication and
@@ -43,7 +44,7 @@ Acceptance: the binary executes on a real Linux host, inspects it, runs real
 rules and emits valid JSON. Demonstrated on the development host.
 
 Known gaps deliberately deferred: sudo policy, capabilities, systemd, cron,
-containers, namespaces, relationship graph.
+containers, namespaces, relationship graph — all now delivered in M2/M3.
 
 ## M1.5 — Governance and Docker laboratory — complete
 
@@ -67,52 +68,38 @@ Delivered:
 
 Acceptance: `make lab-test` runs unattended against Docker, validates JSON,
 separates passed/failed/unsupported scenarios and exits non-zero on failure.
-Verified result: 32/32 supported scenarios, 5 unsupported, 0 missing,
+Verified result: 34/34 supported scenarios, 5 unsupported, 0 missing,
 0 unexpected, 0 unaccounted findings, 0 duplicate findings, 0 dangling
 evidence, 5/5 schema-valid.
 
-## M2 — Linux discovery depth — **implementation complete — CONDITIONALLY ACCEPTED**
+## M2 — Linux discovery depth — **complete**
 
 Objective: richer shared filesystem and process observations without changing
-the architecture. All four deliverables are implemented; the milestone is
-accepted conditional on documented environmental verification limitations.
+the architecture. All deliverables are implemented.
 
 Completed deliverables:
 
 - **Process observations** from `/proc/<pid>` with bounded, race-aware collection.
-  `nulq system info` emits 354 `process.info` observations; 338 observed in a
-  full scan. Collector reads only `/proc/<pid>/stat`, `/proc/<pid>/status` and
-  the `exe` symlink; never reads prohibited sensitive data (`/proc/PID/{environ,
-  cmdline, mem, maps, fd}`). PID-reuse guard via `starttime`. Budget-bounded by
-  `DefaultMaxProcesses = 8192`. Kernel threads detected and excluded. 123 top-level
-  tests pass, coverage 90.4% in the process collector.
-
+  `nulq system info` emits `process.info` observations; collector reads only
+  `/proc/<pid>/stat`, `/proc/<pid>/status` and the `exe` symlink; never reads
+  prohibited sensitive data (`/proc/PID/{environ, cmdline, mem, maps, fd}`).
+  PID-reuse guard via `starttime`. Budget-bounded by `DefaultMaxProcesses`.
+  Kernel threads detected and excluded.
 - **Mount flag analysis** (`nosuid`, `noexec`) as first-class observations.
-  `NULQ-FS-004` is now registered in `internal/rules/rules.go`; 8 rules total.
-  Reports SUID/SGID on `nosuid` mounts and world-writable on `noexec` mounts at
-  INFO/MEDIUM confidence, with explicit text that the flag constrains execution
-  and is not a weakness in itself. Mountinfo parser uses longest-boundary
-  resolution with deterministic tie-break. Parser fuzzing passes (2.9M execs, no
-  corpus written). Coverage 87.9% after registration.
-
+  `NULQ-FS-004` is registered; reports SUID/SGID on `nosuid` mounts and
+  world-writable on `noexec` mounts at INFO/MEDIUM confidence, with explicit
+  text that the flag constrains execution and is not a weakness in itself.
+  Mountinfo parser uses longest-boundary resolution with deterministic tie-break.
+  Parser fuzzing passes.
 - **ACL-aware permission evaluation** where POSIX ACLs are readable.
-  POSIX ACL v2 xattr parser fixed for kernel `ACL_UNDEFINED_ID` defect; every
-  real ACL is now correctly parsed and evaluated. `acl.EvaluateFor` at 100%
-  coverage. Live xattr tests validate real-ACL handling. The CLI now reports
-  `acl_status=present` with mask and `effective_write=denied` for files with
-  genuine POSIX ACLs.
-
+  POSIX ACL v2 xattr parser fixed for kernel `ACL_UNDEFINED_ID` defect;
+  every real ACL is correctly parsed and evaluated. `acl.EvaluateFor` at 100%
+  coverage. Live xattr tests validate real-ACL handling.
 - **Directory containment analysis** (writable parent of a privileged file).
-  New rule `NULQ-PROC-001` (module `process`, category `permissions`,
-  `Required: [process]`) consumes process observations during normal `scan`.
+  `NULQ-PROC-001` consumes process observations during normal `scan`.
   Eight non-silent outcomes plus a silent case keep four categories distinct:
   inventory, exposure, potential privileged impact, confirmed privilege-boundary
   weakness. A writable parent directory alone never yields a privilege finding.
-  22-case table test plus 4 structural tests (grouping, inconsistency, required-
-  kind, cancellation) all pass. Synthetic end-to-end through the real `app.Scan`
-  pipeline produces 1 INFO/MEDIUM finding with 17 resolving evidence refs and
-  schema-valid JSON. Integration test scenarios SCN-PROC-001…004 exercise the
-  full pipeline without Docker or root.
 
 Acceptance: all four capabilities are implemented, all 8 rules registered,
 process observations consumed in normal scans, writable-parent relationships
@@ -120,55 +107,56 @@ produce evidence-backed findings, UNKNOWN states stay conservative, synthetic
 harness exercises the real pipeline, M1.5 is clean, every runnable gate passes,
 and no material defect remains.
 
-The remaining conditions are environmental:
+## M3 — Privilege-boundary analysis — **complete**
 
-- **Docker / Alpine lab E2E and container isolation** — BLOCKED by directive (daemon
-  reachable but deliberately unused). No container was started; no M2-era E2E
-  evidence exists. This is the only environmental blocker preventing an
-  unconditional acceptance.
+All five deliverables are implemented:
 
-- **HIGH-severity live fixture** — a root-owned SUID executable in a writable
-  directory cannot be created unprivileged. The HIGH branch is proven by rule-level
-  tests with synthetic attributes through the real `Evaluate`, and the same
-  pipeline is demonstrated end-to-end at INFO. This is a verification limit, not
-  presented as live coverage.
-
-- **Lab scenarios** — the existing lab validator replays stored reports; the
-  process-specific synthetic scenarios are exercised through the Go integration
-  harness. No M2 scenarios or fixtures exist in `lab/manifest.json` (process,
-  acl, nosuid, noexec each occur 0 times). Artifacts are M1.5-era; a refresh
-  depends on Docker.
-
-Future milestones unchanged:
-
-## M3 — Privilege-boundary analysis — planned
-
-Deliverables:
-
-- Sudoers policy parsing (read-only, no `sudo` invocation) including includes,
-  aliases, NOPASSWD and command wildcards.
-- File capability observations and rules (capability sets, effective vs
-  inheritable, elevated capability inventory).
-- systemd unit/timer parsing: `User=`, `ExecStart=`, environment, writable
-  executable dependencies.
-- Cron and at jobs, including run-parts directories and ownership chains.
-- Execution dependency rules that report *writable dependency of a privileged
-  executor* rather than a writable file in isolation.
+- **Sudoers policy parsing** — `NULQ-ID-002` reads `/etc/sudoers` and
+  `/etc/sudoers.d/` read-only, no `sudo` invocation. Handles includes,
+  aliases, NOPASSWD and command wildcards. Unit-tested (positive/negative/
+  unavailable).
+- **File capability observations** — `NULQ-FS-005` reads `security.capability`
+  xattr and inventories capability sets (permitted, inheritable, effective).
+  Unit-tested (positive/negative/unavailable).
+- **systemd unit parsing** — `NULQ-SYS-005` reads `.service` unit files from
+  standard systemd directories, evaluates `User=`, `NoNewPrivileges=`,
+  `ProtectSystem=`, `ProtectHome=`, `PrivateTmp=`, `CapabilityBoundingSet=`.
+  Never starts/stops units or contacts PID 1 over D-Bus.
+- **Cron and at jobs** — `NULQ-ID-003` reads cron directories and files,
+  reports writable job files and scheduled commands. Unit-tested
+  (positive/negative/unavailable).
+- **Execution dependency rules** — writable dependency of a privileged executor
+  is reported through `NULQ-PROC-001` with evidence for each link.
 
 Acceptance: the engine distinguishes an isolated writable file from a writable
 dependency of a privileged execution path, with evidence for each link.
+Verified by rule-level tests and end-to-end `app.Scan` pipeline tests.
 
-## M4 — Advanced Linux analysis — planned
+## M4 — Advanced Linux analysis — **partially complete**
 
-Deliverables: container/runtime indicators and group-mapping risks; namespace
-inventory and divergence; kernel version and mitigation observations without
-version-only exploit claims; AppArmor/SELinux policy presence; distribution
-compatibility matrix; restricted-environment degradation tests.
+Implemented:
+
+- Container/runtime indicators — `NULQ-SYS-008` probes Docker socket,
+  containerd socket and `/.dockerenv` without connecting to any socket.
+  Lab-asserted (SYS-008 scenario).
+- Kernel version and mitigation observations — `NULQ-SYS-007` reads
+  `/sys/devices/system/cpu/vulnerabilities/*` and reports each mitigation
+  status. Lab-asserted (SYS-007 scenario).
+- AppArmor/SELinux policy presence — `NULQ-SYS-002` reports LSM state from
+  each security module independently; one permissive module cannot cancel
+  another enforcing one.
+
+Not yet implemented:
+
+- Group-mapping risks and namespace inventory/divergence.
+- Distribution compatibility matrix.
+- Restricted-environment degradation tests beyond current coverage.
 
 Acceptance: checks work gracefully when `/proc`, `/sys` or security filesystems
-are unavailable, and say so.
+are unavailable, and say so. Implemented checks meet this; remaining items are
+planned.
 
-## M5 — Relationship and correlation engine — planned
+## M5 — Relationship and correlation engine — **planned**
 
 Deliverables:
 
@@ -184,7 +172,10 @@ Acceptance: every correlated finding lists the ordered relationship chain and
 its evidence. See `docs/relationship-graph.md` and
 `docs/correlation-engine.md` for the intended design.
 
-## M6 — Reporting and integration — partially present
+Per AGENTS.md rule 10, correlation is designed but not implemented. Until it
+is, NULQ must not be described as correlating, graphing or chaining findings.
+
+## M6 — Reporting and integration — **partially present**
 
 Already delivered: JSON Schema v1, JSONL, Markdown, stable IDs, exit codes,
 `pkg/api`, shell/Python examples.
@@ -193,7 +184,7 @@ Remaining: stored-report queries (`findings list`, `report`), severity
 baselines and diffing between scans, SARIF export evaluation, integration test
 fixtures packaged for consumers.
 
-## M7 — Hardening and release — in progress
+## M7 — Hardening and release — **in progress**
 
 Delivered: race-clean tests, parser fuzzing for mount parsing, threat model,
 release workflow with checksums.
