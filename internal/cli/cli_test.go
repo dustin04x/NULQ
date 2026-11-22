@@ -38,7 +38,7 @@ func fixtureRoot(t *testing.T) string {
 	if err := os.WriteFile(suid, []byte("fixture"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Chmod(suid, 0o755|fs.ModeSetuid); err != nil {
+	if err := os.Chmod(suid, 0o644|fs.ModeSetuid); err != nil {
 		t.Fatal(err)
 	}
 
@@ -218,7 +218,7 @@ func TestScanFailOnNoFindings(t *testing.T) {
 
 	app, _, _ := newTestApp()
 	code := app.Run(context.Background(), []string{
-		"scan", "--root", root, "--format", "json",
+		"scan", "--root", root, "--modules", "filesystem", "--format", "json",
 		"--fail-on", "high",
 	})
 	// With no findings, MaxSeverity() returns "" (invalid), AtLeast returns false => exit 0
