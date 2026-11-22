@@ -73,9 +73,9 @@ func (r pathEntryRule) Evaluate(ctx context.Context, obs interfaces.ObservationS
 			remediation = "Replace the relative entry with an absolute path."
 		} else {
 			writable, _ := effectiveWritable(entry)
-			// If write permission is denied, skip this entry
-			// (matching the original rule behavior where !WritableByCurrentUser caused a continue).
-			if writable == "denied" {
+			// If write permission is denied or unknown, skip this entry.
+			// Unknown writability must not be reported as a finding.
+			if writable == "denied" || writable == "unknown" {
 				continue
 			}
 			// If write is allowed and the directory is owned by the assessed user,
@@ -87,8 +87,7 @@ func (r pathEntryRule) Evaluate(ctx context.Context, obs interfaces.ObservationS
 				impact = "No privilege boundary is crossed when the current user writes here. Risk arises only if a privileged process resolves commands through this PATH without resetting it, which was not observed."
 				remediation = "No action is required for interactive use. Ensure privileged automation sets a trusted PATH or uses absolute command paths."
 			} else {
-				// Write permission is available (either allowed or denied-but-known,
-				// or we have some other situation), and the directory is not owned
+				// Write permission is allowed, and the directory is not owned
 				// by the assessed user (or we don't have an effective UID to check).
 				title = "PATH directory is writable by the current user but owned by another account"
 				explanation = fmt.Sprintf(

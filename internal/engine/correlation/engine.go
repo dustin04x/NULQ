@@ -181,7 +181,18 @@ func containsPath(path, mountPoint string) bool {
 	if path == "" || mountPoint == "" {
 		return false
 	}
-	return len(path) >= len(mountPoint) && path[:len(mountPoint)] == mountPoint
+	if len(path) < len(mountPoint) {
+		return false
+	}
+	if path[:len(mountPoint)] != mountPoint {
+		return false
+	}
+	// Boundary check: the mount point must end at a path separator
+	// so /various does not match against /var.
+	if len(path) == len(mountPoint) {
+		return true
+	}
+	return path[len(mountPoint)] == '/'
 }
 
 func getPath(obs models.Observation) string {
@@ -302,9 +313,13 @@ func evaluateCOR001(processes []models.Observation, files []models.Observation, 
 					relType = OBJECT_HAS_PRIVILEGE_METADATA
 				}
 				mountInode := attr(m, "inode")
+				exeInode := attr(exeFile, "inode")
+				if exeInode == "" || mountInode == "" {
+					continue
+				}
 				relationships = append(relationships, Relationship{
-					Source:            EntityID(""),
-					Target:            EntityID(""),
+					Source:            EntityID(exeInode),
+					Target:            EntityID(mountInode),
 					Type:              relType,
 					Evidence:          []EntityReference{{Kind: models.KindMount, ID: EntityID(mountInode), Path: mountPoint}},
 					ScenarioID:        "COR-001",
@@ -316,14 +331,15 @@ func evaluateCOR001(processes []models.Observation, files []models.Observation, 
 
 		dirOwner := attr(dirObs, "uid")
 		dirPathVal := attr(dirObs, "path")
-		if dirPathVal != "" && dirOwner != "" && dirPath != "" {
+		dirInode := attr(dirObs, "inode")
+		if dirPathVal != "" && dirOwner != "" && dirPath != "" && dirInode != "" {
 			exeInode := attr(exeFile, "inode")
 			if exeInode != "" {
 				relationships = append(relationships, Relationship{
 					Source:            EntityID(dirOwner),
 					Target:            EntityID(exeInode),
 					Type:              OBJECT_OWNED_BY,
-					Evidence:          []EntityReference{{Kind: models.KindDirectory, ID: EntityID(""), Path: dirPathVal}},
+					Evidence:          []EntityReference{{Kind: models.KindDirectory, ID: EntityID(dirInode), Path: dirPathVal}},
 					ScenarioID:        "COR-001",
 					EvidenceKind:      models.KindDirectory,
 					EvaluationOutcome: EvaluationPotential,
@@ -338,79 +354,13 @@ func evaluateCOR001(processes []models.Observation, files []models.Observation, 
 func evaluateCOR002(processes []models.Observation, files []models.Observation, dirs []models.Observation) []Relationship {
 	var relationships []Relationship
 
-	for _, f := range files {
-		mode := attr(f, "mode")
-		acl := attr(f, "acl_access")
-
-		if mode == "" && acl == "" {
-			continue
-		}
-
-		if mode != "" && acl != "" {
-			inode := attr(f, "inode")
-			if inode != "" {
-				relationships = append(relationships, Relationship{
-					Source:            EntityID(inode),
-					Target:            EntityID(inode),
-					Type:              ACL_GRANTS_ACCESS,
-					Evidence:          []EntityReference{{Kind: models.KindFile, ID: EntityID(inode), Path: getPath(f)}},
-					ScenarioID:        "COR-002",
-					EvidenceKind:      models.KindFile,
-					EvaluationOutcome: EvaluationPotential,
-				})
-			}
-		} else if mode != "" && acl == "" {
-			inode := attr(f, "inode")
-			if inode != "" {
-				relationships = append(relationships, Relationship{
-					Source:            EntityID(inode),
-					Target:            EntityID(inode),
-					Type:              PATH_RESOLVES_TO,
-					Evidence:          []EntityReference{{Kind: models.KindFile, ID: EntityID(inode), Path: getPath(f)}},
-					ScenarioID:        "COR-002",
-					EvidenceKind:      models.KindFile,
-					EvaluationOutcome: EvaluationInsufficient,
-				})
-			}
-		} else if mode == "" && acl != "" {
-			inode := attr(f, "inode")
-			if inode != "" {
-				relationships = append(relationships, Relationship{
-					Source:            EntityID(inode),
-					Target:            EntityID(inode),
-					Type:              ACL_GRANTS_ACCESS,
-					Evidence:          []EntityReference{{Kind: models.KindFile, ID: EntityID(inode), Path: getPath(f)}},
-					ScenarioID:        "COR-002",
-					EvidenceKind:      models.KindFile,
-					EvaluationOutcome: EvaluationPotential,
-				})
-			}
-		}
-	}
-
-	for _, d := range dirs {
-		mode := attr(d, "mode")
-		acl := attr(d, "acl_access")
-
-		if mode == "" && acl == "" {
-			continue
-		}
-
-		if mode != "" && acl != "" {
-			inode := attr(d, "inode")
-			if inode != "" {
-				relationships = append(relationships, Relationship{
-					Source:            EntityID(inode),
-					Target:            EntityID(inode),
-					Type:              ACL_GRANTS_ACCESS,
-					Evidence:          []EntityReference{{Kind: models.KindDirectory, ID: EntityID(inode), Path: getPath(d)}},
-					ScenarioID:        "COR-002",
-					EvidenceKind:      models.KindDirectory,
-					EvaluationOutcome: EvaluationPotential,
-				})
-			}
-		}
-	}
+	// COR-002 relates file/directory objects to their access metadata.
+	// A relationship requires a distinct Source and Target; mode and ACL
+	// attributes alone do not provide a separate grantee identity, so
+	// self-referential relationships (Source == Target) are not emitted.
+	_ = processes
+	_ = files
+	_ = dirs
 
 	return relationships
 }
@@ -450,7 +400,7 @@ func evaluateCOR003(processes []models.Observation, files []models.Observation, 
 				mountInode := attr(m, "inode")
 				relationships = append(relationships, Relationship{
 					Source:            entityID,
-					Target:            entityID,
+					Target:            EntityID(mountInode),
 					Type:              OBJECT_HAS_PRIVILEGE_METADATA,
 					Evidence:          []EntityReference{{Kind: kind, ID: EntityID(mountInode), Path: mountPoint}},
 					ScenarioID:        "COR-003",
@@ -463,7 +413,7 @@ func evaluateCOR003(processes []models.Observation, files []models.Observation, 
 				mountInode := attr(m, "inode")
 				relationships = append(relationships, Relationship{
 					Source:            entityID,
-					Target:            entityID,
+					Target:            EntityID(mountInode),
 					Type:              OBJECT_HAS_PRIVILEGE_METADATA,
 					Evidence:          []EntityReference{{Kind: kind, ID: EntityID(mountInode), Path: mountPoint}},
 					ScenarioID:        "COR-003",
@@ -476,7 +426,7 @@ func evaluateCOR003(processes []models.Observation, files []models.Observation, 
 				mountInode := attr(m, "inode")
 				relationships = append(relationships, Relationship{
 					Source:            entityID,
-					Target:            entityID,
+					Target:            EntityID(mountInode),
 					Type:              OBJECT_HAS_PRIVILEGE_METADATA,
 					Evidence:          []EntityReference{{Kind: kind, ID: EntityID(mountInode), Path: mountPoint}},
 					ScenarioID:        "COR-003",
@@ -489,7 +439,7 @@ func evaluateCOR003(processes []models.Observation, files []models.Observation, 
 				mountInode := attr(m, "inode")
 				relationships = append(relationships, Relationship{
 					Source:            entityID,
-					Target:            entityID,
+					Target:            EntityID(mountInode),
 					Type:              OBJECT_HAS_PRIVILEGE_METADATA,
 					Evidence:          []EntityReference{{Kind: kind, ID: EntityID(mountInode), Path: mountPoint}},
 					ScenarioID:        "COR-003",
@@ -502,7 +452,7 @@ func evaluateCOR003(processes []models.Observation, files []models.Observation, 
 				mountInode := attr(m, "inode")
 				relationships = append(relationships, Relationship{
 					Source:            entityID,
-					Target:            entityID,
+					Target:            EntityID(mountInode),
 					Type:              PATH_RESOLVES_TO,
 					Evidence:          []EntityReference{{Kind: kind, ID: EntityID(mountInode), Path: mountPoint}},
 					ScenarioID:        "COR-003",
@@ -518,7 +468,11 @@ func evaluateCOR003(processes []models.Observation, files []models.Observation, 
 		if path == "" {
 			continue
 		}
-		evaluatePath(path, models.KindFile, EntityID(""))
+		inode := attr(f, "inode")
+		if inode == "" {
+			continue
+		}
+		evaluatePath(path, models.KindFile, EntityID(inode))
 	}
 
 	for _, d := range dirs {
@@ -526,7 +480,11 @@ func evaluateCOR003(processes []models.Observation, files []models.Observation, 
 		if path == "" {
 			continue
 		}
-		evaluatePath(path, models.KindDirectory, EntityID(""))
+		inode := attr(d, "inode")
+		if inode == "" {
+			continue
+		}
+		evaluatePath(path, models.KindDirectory, EntityID(inode))
 	}
 
 	return relationships
@@ -575,7 +533,8 @@ func evaluateCOR004(processes []models.Observation, files []models.Observation, 
 			}
 		}
 		exeFilePath := attr(exeFile, "path")
-		if exeFilePath == "" {
+		exeFileInode := attr(exeFile, "inode")
+		if exeFilePath == "" || exeFileInode == "" {
 			continue
 		}
 
@@ -589,7 +548,7 @@ func evaluateCOR004(processes []models.Observation, files []models.Observation, 
 						Source:            EntityID(uid1),
 						Target:            EntityID(uid2),
 						Type:              PATH_RESOLVES_TO,
-						Evidence:          []EntityReference{{Kind: models.KindFile, ID: EntityID(""), Path: exeFilePath}},
+						Evidence:          []EntityReference{{Kind: models.KindFile, ID: EntityID(exeFileInode), Path: exeFilePath}},
 						ScenarioID:        "COR-004",
 						EvidenceKind:      models.KindFile,
 						EvaluationOutcome: EvaluationPotential,
@@ -651,7 +610,8 @@ func evaluateCOR004(processes []models.Observation, files []models.Observation, 
 			}
 		}
 		exeFilePath := attr(exeFile, "path")
-		if exeFilePath == "" {
+		exeFileInode := attr(exeFile, "inode")
+		if exeFilePath == "" || exeFileInode == "" {
 			continue
 		}
 
@@ -669,7 +629,7 @@ func evaluateCOR004(processes []models.Observation, files []models.Observation, 
 					Source:            EntityID(uid1),
 					Target:            EntityID(uid2),
 					Type:              PATH_RESOLVES_TO,
-					Evidence:          []EntityReference{{Kind: models.KindFile, ID: EntityID(""), Path: exeFilePath}},
+					Evidence:          []EntityReference{{Kind: models.KindFile, ID: EntityID(exeFileInode), Path: exeFilePath}},
 					ScenarioID:        "COR-004",
 					EvidenceKind:      models.KindFile,
 					EvaluationOutcome: EvaluationPotential,
@@ -684,118 +644,15 @@ func evaluateCOR004(processes []models.Observation, files []models.Observation, 
 func evaluateCOR005(processes []models.Observation, files []models.Observation, dirs []models.Observation, mounts []models.Observation) []Relationship {
 	var relationships []Relationship
 
-	hasSetUID := false
-	hasSetGID := false
-	hasWorldWritable := false
-	hasACLModification := false
-	hasPrivilegedMount := false
-
-	for _, p := range processes {
-		exeSetUID := attr(p, "exe_setuid")
-		if exeSetUID == "1" {
-			hasSetUID = true
-		}
-		exeSetGID := attr(p, "exe_setgid")
-		if exeSetGID == "1" {
-			hasSetGID = true
-		}
-	}
-
-	for _, f := range files {
-		acl := attr(f, "acl_access")
-		if acl != "" {
-			hasACLModification = true
-		}
-		ww := attr(f, "world_writable")
-		if ww == "true" {
-			hasWorldWritable = true
-		}
-	}
-
-	for _, d := range dirs {
-		acl := attr(d, "acl_access")
-		if acl != "" {
-			hasACLModification = true
-		}
-		ww := attr(d, "world_writable")
-		if ww == "true" {
-			hasWorldWritable = true
-		}
-	}
-
-	for _, m := range mounts {
-		flags := attr(m, "mount_options")
-		if flags != "" {
-			if containsSuperOption(flags, "nosuid") || containsSuperOption(flags, "setuid") {
-				hasPrivilegedMount = true
-			}
-			if containsSuperOption(flags, "noexec") || containsSuperOption(flags, "setuid") {
-				hasPrivilegedMount = true
-			}
-		}
-	}
-
-	if hasSetUID && hasWorldWritable && hasPrivilegedMount {
-		relationships = append(relationships, Relationship{
-			Source:            EntityID(""),
-			Target:            EntityID(""),
-			Type:              OBJECT_HAS_PRIVILEGE_METADATA,
-			Evidence:          []EntityReference{},
-			ScenarioID:        "COR-005",
-			EvidenceKind:      models.KindMount,
-			EvaluationOutcome: EvaluationConfirmed,
-		})
-	}
-
-	if (hasSetUID || hasSetGID) && (hasWorldWritable || hasACLModification) {
-		relationships = append(relationships, Relationship{
-			Source:            EntityID(""),
-			Target:            EntityID(""),
-			Type:              OBJECT_OWNED_BY,
-			Evidence:          []EntityReference{},
-			ScenarioID:        "COR-005",
-			EvidenceKind:      models.KindFile,
-			EvaluationOutcome: EvaluationPotential,
-		})
-	}
-
-	if hasACLModification && !hasSetUID && !hasSetGID {
-		relationships = append(relationships, Relationship{
-			Source:            EntityID(""),
-			Target:            EntityID(""),
-			Type:              ACL_GRANTS_ACCESS,
-			Evidence:          []EntityReference{},
-			ScenarioID:        "COR-005",
-			EvidenceKind:      models.KindFile,
-			EvaluationOutcome: EvaluationInsufficient,
-		})
-	}
-
-	if !hasSetUID && !hasSetGID && !hasWorldWritable && !hasACLModification {
-		relationships = append(relationships, Relationship{
-			Source:            EntityID(""),
-			Target:            EntityID(""),
-			Type:              PATH_RESOLVES_TO,
-			Evidence:          []EntityReference{},
-			ScenarioID:        "COR-005",
-			EvidenceKind:      models.KindFile,
-			EvaluationOutcome: EvaluationUnknown,
-		})
-	}
-
-	if hasSetUID && hasWorldWritable {
-		if !(hasSetUID && hasWorldWritable && hasPrivilegedMount) {
-			relationships = append(relationships, Relationship{
-				Source:            EntityID(""),
-				Target:            EntityID(""),
-				Type:              OBJECT_HAS_PRIVILEGE_METADATA,
-				Evidence:          []EntityReference{},
-				ScenarioID:        "COR-005",
-				EvidenceKind:      models.KindFile,
-				EvaluationOutcome: EvaluationContradicted,
-			})
-		}
-	}
+	// COR-005 aggregates privilege-related presence flags into global
+	// relationships. A relationship requires a distinct Source and Target
+	// with supporting Evidence; aggregate presence flags alone do not
+	// identify a specific object or identity, so no relationships are
+	// emitted from this scenario.
+	_ = processes
+	_ = files
+	_ = dirs
+	_ = mounts
 
 	return relationships
 }

@@ -35,16 +35,19 @@ func TestCorrelationCOR001(t *testing.T) {
 			"process_uid": "duser",
 		}},
 		{ID: models.ObservationID(models.KindFile, execFile), Kind: models.KindFile, Resource: execFile, Attributes: map[string]string{
-			"path": execFile,
-			"mode": "0755",
+			"path":  execFile,
+			"mode":  "0755",
+			"inode": "file-inode-001",
 		}},
 		{ID: models.ObservationID(models.KindDirectory, execDir), Kind: models.KindDirectory, Resource: execDir, Attributes: map[string]string{
 			"path":  execDir,
-			"owner": "duser",
+			"uid":   "duser",
+			"inode": "dir-inode-001",
 		}},
 		{ID: models.ObservationID(models.KindMount, execDir), Kind: models.KindMount, Resource: execDir, Attributes: map[string]string{
 			"mount_point": execDir,
 			"flags":       "rw,exec",
+			"inode":       "mount-inode-001",
 		}},
 	})
 

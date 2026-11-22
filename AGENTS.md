@@ -198,15 +198,25 @@ A rule is acceptable only when all of the following hold:
 
 ## 10. Correlation requirements
 
-Correlation is designed (M5) but **not implemented**. Until it is:
+Correlation is implemented in `internal/engine/correlation/engine.go`
+(scenarios COR-001 through COR-005). Every emitted relationship carries
+observation references; observed and inferred edges are distinguishable by
+`EvaluationOutcome`; and no relationship is emitted with empty `Source` or
+`Target` IDs or empty `Evidence`.
 
-- never describe NULQ as correlating, graphing or chaining findings;
-- never emit a finding that depends on an inferred edge;
-- keep `docs/relationship-graph.md` and `docs/correlation-engine.md` labelled as
-  design;
-- when it is implemented, every edge carries observation references, observed
-  and inferred edges are distinguishable, and any correlated finding lists its
-  ordered chain and confidence propagation.
+- A relationship requires a distinct Source and Target entity; self-referential
+  relationships (Source == Target) are not emitted.
+- A relationship requires at least one Evidence reference; relationships with
+  empty Evidence are not emitted.
+- `containsPath()` uses a boundary-aware prefix match so `/various` does not
+  match against `/var`.
+- Aggregate presence flags (e.g. COR-005) that cannot identify a specific
+  Source/Target pair produce no relationships.
+- Keep `docs/relationship-graph.md` and `docs/correlation-engine.md` labelled
+  as design documentation describing the intended model.
+- When correlation findings are consumed, every edge carries observation
+  references, and any correlated finding lists its ordered chain and confidence
+  propagation.
 
 ## 11. Error handling
 

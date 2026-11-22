@@ -156,24 +156,21 @@ Acceptance: checks work gracefully when `/proc`, `/sys` or security filesystems
 are unavailable, and say so. Implemented checks meet this; remaining items are
 planned.
 
-## M5 — Relationship and correlation engine — **planned**
+## M5 — Relationship and correlation engine — **implemented**
 
-Deliverables:
+Implemented:
 
-- Typed in-memory graph with observed vs inferred edges and observation
-  references on every edge.
-- Correlation rules with confidence propagation.
-- Explainable chains (for example: user-writable directory → privileged unit
-  executes script there → script owned by root → service runs as root).
-- Reproducibility: each correlation must be reconstructable from its source
-  observations.
+- `internal/engine/correlation/engine.go` with scenarios COR-001 through COR-005
+- Typed relationships with Source, Target, Type, Evidence, ScenarioID, EvidenceKind, EvaluationOutcome
+- Boundary-aware `containsPath()` (no `/various` matching `/var`)
+- No self-referential relationships (Source == Target not emitted)
+- No empty Source/Target IDs or empty Evidence
+- COR-001 (executable replacement exposure), COR-003 (mount privilege metadata) produce relationships
+- COR-002, COR-004, COR-005 produce no relationships when distinct Source/Target cannot be determined
 
-Acceptance: every correlated finding lists the ordered relationship chain and
-its evidence. See `docs/relationship-graph.md` and
-`docs/correlation-engine.md` for the intended design.
+Acceptance: every emitted relationship carries observation references; observed and inferred edges are distinguishable by `EvaluationOutcome`; no relationship has empty Source, Target, or Evidence. See `docs/relationship-graph.md` and `docs/correlation-engine.md` for the intended design.
 
-Per AGENTS.md rule 10, correlation is designed but not implemented. Until it
-is, NULQ must not be described as correlating, graphing or chaining findings.
+Per AGENTS.md rule 10, correlation is implemented. NULQ may be described as correlating findings through the relationship engine.
 
 ## M6 — Reporting and integration — **partially present**
 

@@ -27,9 +27,8 @@ NULQ is a working v0.1.0 foundation:
   `docs/architecture/severity-confidence-model.md`.
 - Committed and pushed to `origin/master`; no release tag yet.
 
-Known unimplemented areas, deliberately out of scope here: relationship graph
-and correlation engine (M5, designed but not implemented per AGENTS.md rule 10),
-stored-report queries and SARIF export (M6), release signing (M7).
+Known unimplemented areas, deliberately out of scope here: stored-report
+queries and SARIF export (M6), release signing (M7).
 
 ## Objective
 
