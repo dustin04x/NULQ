@@ -94,6 +94,27 @@ capabilities, the Docker socket, or mounts of `/`, `/etc`, `/usr`, `/var`,
 If Docker is unavailable, report the prerequisite and stop. Never install or
 reconfigure Docker.
 
+### Separate vulnerable-target laboratory
+
+A second, independently scoped vulnerable-target lab may exist at
+`lab/vulnerable-target/` under the same security constraints as the primary
+lab: non-root container user, all capabilities dropped, `no-new-privileges`,
+read-only root filesystem wherever compatible, `network_mode: none`, no host
+namespaces, no Docker socket, no host mounts, the `com.nulq.vulnerable-target`
+label, and the dedicated Compose project name `nulq-vulntarget`. It must build
+from a pinned base image digest, never `latest`. It must not modify the pinned
+Alpine lab image, its compose file, or its cleanup scope.
+
+The original `nulq-lab` remains restricted to its original pinned Alpine image
+built from `lab/docker/alpine/Dockerfile`. The vulnerable-target lab is
+independent: it has its own build, compose configuration, resource labels, and
+cleanup. Existing cleanup scripts never remove vulnerable-target resources, and
+vulnerable-target cleanup never removes original lab resources. No global
+Docker pruning is performed by either lab.
+
+Discovered target binaries are never executed. Findings are evidence-backed and
+read-only only.
+
 ## 4. Architecture boundaries
 
 ```text

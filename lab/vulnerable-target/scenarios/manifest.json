@@ -1,0 +1,508 @@
+{
+  "schema_version": "1.0",
+  "target": "Alpine Linux 3.22 (BusyBox), linux/amd64, deliberately misconfigured",
+  "description": "Scenario contract for the NULQ vulnerable-target laboratory. Supported scenarios are evaluated against the real binary's JSON. Unsupported scenarios document checks that cannot run in this container and are never reported as passes.",
+  "artifacts": {
+    "baseline": "scan.json",
+    "fixtures": "scan-fixtures.json",
+    "path": "scan-path.json",
+    "identity": "scan-identity.json",
+    "app": "scan-app.json"
+  },
+  "scenarios": [
+    {
+      "id": "VT-FS-001",
+      "title": "World-writable directory without sticky bit detected",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "fs/world-writable (0777, no sticky) must produce a NULQ-FS-002 MEDIUM finding.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/world-writable",
+            "match": "exact",
+            "severity": "MEDIUM"
+          }
+        ],
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-006",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-007",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-008",
+            "match": "any"
+          }
+        ],
+        "coverage": {
+          "status": "partial",
+          "complete": false,
+          "execution_complete": true
+        }
+      }
+    },
+    {
+      "id": "VT-FS-002",
+      "title": "Sticky-bit world-writable directory is not itself escalated",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "fs/world-writable-sticky (1777) must not produce a NULQ-FS-002 finding (sticky bit prevents escalation).",
+      "expect": {
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/world-writable-sticky",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-003",
+      "title": "Root-owned SUID executable inventory",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "suid/root-owned-tool (4755, root:root) must produce a NULQ-FS-001 LOW finding (privileged executable outside standard system directories).",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/root-owned-tool",
+            "match": "exact",
+            "severity": "LOW"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-004",
+      "title": "SUID in world-writable directory escalates to HIGH",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "sgid/writable-dir/suid-tool (root SUID inside 0777 dir) must produce a NULQ-FS-002 HIGH finding on the directory.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/sgid/writable-dir",
+            "match": "exact",
+            "severity": "HIGH"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-005",
+      "title": "Inert SUID without execute bit is INFO",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "suid/inert-suid (4644, no exec bit) must produce INFO, never HIGH (set-owner-ID bit without execute bit is inert).",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/suid/inert-suid",
+            "match": "exact",
+            "severity": "INFO"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-006",
+      "title": "World-writable directory with root-owned executable",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "fs/world-writable-exec (0777 dir containing root-owned non-SUID executable) produces MEDIUM, not HIGH (no directly replaceable privileged executable).",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/world-writable-exec",
+            "match": "exact",
+            "severity": "MEDIUM"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-007",
+      "title": "Writable parent directory ancestry",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "fs/writable-parent (0777 parent with child tool) produces MEDIUM on the parent directory.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/writable-parent",
+            "match": "exact",
+            "severity": "MEDIUM"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-008",
+      "title": "Unsafe directory ancestry attributed to directly writable directory",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "fs/ancestry (nested 0777 directories with tool at leaf) attributes the finding to the directly writable directory containing the executable, with MEDIUM severity.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/ancestry/middle/leaf",
+            "match": "exact",
+            "severity": "MEDIUM"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-009",
+      "title": "Sticky-bit owned-by-user edge case",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "fs/sticky-owned (1777 owned by vulntarget user, containing root SUID tool) is replaceable by that user and produces HIGH.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/sticky-owned",
+            "match": "exact",
+            "severity": "HIGH"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-010",
+      "title": "Clean directory negative control",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "fs/clean (0755, root-owned, plain file) must produce no NULQ-FS-002 finding.",
+      "expect": {
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/fs/clean",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-FS-011",
+      "title": "Unreadable subtree reported as partial coverage",
+      "category": "coverage",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "permissions/denied (0700, root-owned) must be reported as permission-denied in coverage, not silently skipped.",
+      "expect": {
+        "coverage": {
+          "permission_denied_min": 1
+        }
+      }
+    },
+    {
+      "id": "VT-PATH-001",
+      "title": "Writable PATH directory detected as LOW",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "path/writable (0777) in PATH must produce a NULQ-FS-003 LOW finding.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/writable",
+            "match": "exact",
+            "severity": "LOW"
+          }
+        ],
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-FS-003",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-006",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-007",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-008",
+            "match": "any"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-PATH-002",
+      "title": "Late-writable PATH entry is LOW not HIGH",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "path/late-writable (0777 after /usr/bin) must produce LOW, not HIGH (no privileged consumer observed).",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/path/late-writable",
+            "match": "exact",
+            "severity": "LOW"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-PATH-003",
+      "title": "Symlink PATH entry resolved to safe target",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "links/path-link (symlink to non-writable path/safe) must not produce a PATH finding (resolved target decides permissions).",
+      "expect": {
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "/lab/fixtures/links/path-link",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-PATH-004",
+      "title": "Empty PATH entry detected",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "path",
+      "description": "PATH contains an empty entry (double colon) which NULQ-FS-003 reports.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-003",
+            "resource": "<PATH index 1: empty>",
+            "match": "exact",
+            "severity": "LOW"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-ID-001",
+      "title": "Wheel supplementary group membership",
+      "category": "identity",
+      "environment": "live",
+      "supported": true,
+      "scan": "identity",
+      "description": "The assessment account (uid 10001) is granted wheel (gid 10) at runtime; NULQ-ID-001 must report privileged group membership as LOW.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-ID-001",
+            "match": "any",
+            "severity": "LOW"
+          }
+        ],
+        "report": {
+          "unprivileged": true
+        }
+      }
+    },
+    {
+      "id": "VT-SGID-001",
+      "title": "SGID executable inventory",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "sgid/sgid-tool (2755, root:wheel) must produce a NULQ-FS-001 LOW finding (privileged executable outside standard system directories).",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/sgid/sgid-tool",
+            "match": "exact",
+            "severity": "LOW"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-APP-001",
+      "title": "Non-privileged executable with wrong ownership is not flagged",
+      "category": "application",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "app/tool owned by 10002:10002 but not SUID/SGID must not produce a NULQ-FS-001 finding (not a privileged executable).",
+      "expect": {
+        "absent_findings": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "resource": "/lab/fixtures/app/tool",
+            "match": "exact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-APP-002",
+      "title": "Writable application configuration directory",
+      "category": "application",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "fixtures",
+      "description": "app/config/writable (0777) must produce a NULQ-FS-002 MEDIUM finding.",
+      "expect": {
+        "findings": [
+          {
+            "rule_id": "NULQ-FS-002",
+            "resource": "/lab/fixtures/app/config/writable",
+            "match": "exact",
+            "severity": "MEDIUM"
+          }
+        ]
+      }
+    },
+    {
+      "id": "VT-APP-003",
+      "title": "App scan kernel findings accounted",
+      "category": "application",
+      "environment": "synthetic",
+      "supported": true,
+      "scan": "app",
+      "description": "Kernel findings in the app scan are allowed but not asserted; no filesystem findings are expected under /lab/fixtures/app.",
+      "expect": {
+        "allowed_findings": [
+          {
+            "rule_id": "NULQ-SYS-001",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-006",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-007",
+            "match": "any"
+          },
+          {
+            "rule_id": "NULQ-SYS-008",
+            "match": "any"
+          }
+        ],
+        "coverage": {
+          "status": "complete",
+          "complete": true,
+          "execution_complete": true
+        }
+      }
+    },
+    {
+      "id": "VT-CAP-001",
+      "title": "File capability metadata unsupported in lab",
+      "category": "capabilities",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "Setting real security.capability xattrs on fixture binaries requires capabilities not available in the read-only laboratory image.",
+      "scan": ""
+    },
+    {
+      "id": "VT-SUDO-001",
+      "title": "Sudoers policy parsing unsupported in lab",
+      "category": "sudo",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "The sudo collector reads /etc/sudoers from the live system, not from --root fixtures.",
+      "scan": ""
+    },
+    {
+      "id": "VT-CRON-001",
+      "title": "Cron job inventory unsupported in lab",
+      "category": "cron",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "The cron collector reads system cron directories from the live system, not from --root fixtures.",
+      "scan": ""
+    },
+    {
+      "id": "VT-SYSTEMD-001",
+      "title": "systemd unit analysis unsupported in lab",
+      "category": "systemd",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "Alpine does not run systemd; no service is started or stopped.",
+      "scan": ""
+    },
+    {
+      "id": "VT-CONTAINER-001",
+      "title": "Container runtime configuration unsupported in lab",
+      "category": "container",
+      "environment": "unsupported",
+      "supported": false,
+      "reason": "Deeper container runtime configuration analysis is scheduled for M4; no container escape is attempted.",
+      "scan": ""
+    }
+  ]
+}

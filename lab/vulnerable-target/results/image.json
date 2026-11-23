@@ -1,0 +1,1 @@
+{"image":"nulq-vulntarget/alpine-target:3.22","image_id":"sha256:296dfac6a3f40fd1c24a757979f58f732bf069388a1944bd14704f559e95d03f","base_image":"alpine:3.22","base_digest":"sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f","nulq_version":"nulq 0.1.0-dev","built_at":"2026-11-22T11:08:41Z"}

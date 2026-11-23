@@ -1,0 +1,995 @@
+{
+  "schema_version": "1.1",
+  "tool": {
+    "name": "nulq",
+    "version": "0.1.0-dev",
+    "commit": "a9cb885",
+    "build_date": "2026-11-22T11:08:39Z",
+    "go_version": "go1.27.4-X:nodwarf5",
+    "platform": "linux/amd64"
+  },
+  "host": {
+    "hostname": "42ac17820564",
+    "os_id": "alpine",
+    "os_name": "Alpine Linux",
+    "os_version": "3.22.8",
+    "kernel_release": "7.0.14-linuxkit",
+    "architecture": "amd64",
+    "container": true,
+    "container_runtime": "docker"
+  },
+  "scan": {
+    "report_id": "rpt-6bfca678f67f",
+    "started_at": "2026-11-22T11:12:19.582357155Z",
+    "finished_at": "2026-11-22T11:12:19.58703446Z",
+    "duration_ms": 4,
+    "modules": [
+      "identity"
+    ],
+    "unprivileged": true,
+    "partial": false
+  },
+  "findings": [
+    {
+      "id": "fnd-8de52b141dfa",
+      "rule_id": "NULQ-ID-001",
+      "rule_version": "1.0.0",
+      "title": "Privileged group membership: wheel",
+      "description": "The current user holds a group membership that confers, or can be used to obtain, authority beyond an ordinary user account.",
+      "category": "privileged-membership",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "resource": "group:wheel",
+      "resource_kind": "group",
+      "evidence": [
+        "ev-a69520b31a9d",
+        "ev-e192918a9c17",
+        "ev-903427b272d4"
+      ],
+      "explanation": "Account \"vulntarget\" is a member of group \"wheel\" (gid 10, supplementary membership). The wheel group conventionally authorises sudo on many distributions. Actual authority depends on the sudoers policy, which this scan does not evaluate.",
+      "impact": "If the sudo policy authorises this group, the account can become root. The policy is not evaluated, so this is a conditional concern.",
+      "remediation": "Review the sudo policy for this account and remove the membership if elevation is not required.",
+      "limitations": [
+        "Membership is observed; the practical effect depends on the authority granted to the group and on policy this scan does not evaluate.",
+        "Supplementary group order and nested group resolution are not modelled."
+      ],
+      "detected_at": "2026-11-22T11:12:19.586932263Z"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-903427b272d4",
+      "observation_id": "obs-identity-group_membership-794421911bea",
+      "resource": "group:wheel",
+      "resource_kind": "group",
+      "collector": "linux.identity",
+      "field": "source",
+      "observed_value": "supplementary",
+      "explanation": "Whether the group is the primary group or supplementary.",
+      "collected_at": "2026-11-22T11:12:19.584079998Z"
+    },
+    {
+      "id": "ev-a69520b31a9d",
+      "observation_id": "obs-identity-group_membership-794421911bea",
+      "resource": "group:wheel",
+      "resource_kind": "group",
+      "collector": "linux.identity",
+      "field": "group_name",
+      "observed_value": "wheel",
+      "explanation": "The group is present in the effective group set of the running process.",
+      "collected_at": "2026-11-22T11:12:19.584079998Z"
+    },
+    {
+      "id": "ev-e192918a9c17",
+      "observation_id": "obs-identity-group_membership-794421911bea",
+      "resource": "group:wheel",
+      "resource_kind": "group",
+      "collector": "linux.identity",
+      "field": "group_gid",
+      "observed_value": "10",
+      "explanation": "Numeric group identifier of the membership.",
+      "collected_at": "2026-11-22T11:12:19.584079998Z"
+    }
+  ],
+  "observations": [
+    {
+      "id": "obs-identity-cron_job-6e39ace5509d",
+      "kind": "identity.cron_job",
+      "resource": "/var/spool/cron/crontabs",
+      "collector": "linux.cron",
+      "collected_at": "2026-11-22T11:12:19.583288779Z",
+      "status": "unavailable",
+      "error": {
+        "class": "internal",
+        "message": "read /var/spool/cron/crontabs: is a directory"
+      }
+    },
+    {
+      "id": "obs-identity-cron_job-3e05e8300d1f",
+      "kind": "identity.cron_job",
+      "resource": "/var/spool/cron/crontabs/root",
+      "collector": "linux.cron",
+      "collected_at": "2026-11-22T11:12:19.583288779Z",
+      "status": "unavailable",
+      "error": {
+        "class": "permission_denied",
+        "message": "open /var/spool/cron/crontabs/root: permission denied"
+      }
+    },
+    {
+      "id": "obs-identity-execution_context-9801cf6ed0d4",
+      "kind": "identity.execution_context",
+      "resource": "process:1",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "egid": "10001",
+        "euid": "10001",
+        "gid": "10001",
+        "groups": "wheel(10),vulntarget(10001)",
+        "ns_cgroup": "cgroup:[4026532599]",
+        "ns_ipc": "ipc:[4026532597]",
+        "ns_mount": "mnt:[4026532595]",
+        "ns_net": "net:[4026532600]",
+        "ns_pid": "pid:[4026532598]",
+        "ns_user": "user:[4026531837]",
+        "ns_uts": "uts:[4026532596]",
+        "uid": "10001",
+        "umask": "0022",
+        "username": "vulntarget"
+      }
+    },
+    {
+      "id": "obs-identity-group_membership-f01efb95b813",
+      "kind": "identity.group_membership",
+      "resource": "group:vulntarget",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "group_gid": "10001",
+        "group_name": "vulntarget",
+        "source": "primary",
+        "username": "vulntarget"
+      }
+    },
+    {
+      "id": "obs-identity-group_membership-794421911bea",
+      "kind": "identity.group_membership",
+      "resource": "group:wheel",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "group_gid": "10",
+        "group_name": "wheel",
+        "source": "supplementary",
+        "username": "vulntarget"
+      }
+    },
+    {
+      "id": "obs-identity-ssh_authorized_keys-ec0da7f38748",
+      "kind": "identity.ssh_authorized_keys",
+      "resource": "/root/.ssh/authorized_keys",
+      "collector": "linux.sshd",
+      "collected_at": "2026-11-22T11:12:19.583577811Z",
+      "status": "unavailable",
+      "error": {
+        "class": "permission_denied",
+        "message": "stat /root/.ssh/authorized_keys: permission denied"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-eff70c58d470",
+      "kind": "identity.user_account",
+      "resource": "bin",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "1",
+        "user_home": "/bin",
+        "user_name": "bin",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "1"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-e86968e7f478",
+      "kind": "identity.user_account",
+      "resource": "cron",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "16",
+        "user_home": "/var/spool/cron",
+        "user_name": "cron",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "16"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-39c0eb749ba3",
+      "kind": "identity.user_account",
+      "resource": "daemon",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "2",
+        "user_home": "/sbin",
+        "user_name": "daemon",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "2"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-2b8c745fe14c",
+      "kind": "identity.user_account",
+      "resource": "ftp",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "21",
+        "user_home": "/var/lib/ftp",
+        "user_name": "ftp",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "21"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-714dc538e6a7",
+      "kind": "identity.user_account",
+      "resource": "games",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "35",
+        "user_home": "/usr/games",
+        "user_name": "games",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "35"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-b501d7daf265",
+      "kind": "identity.user_account",
+      "resource": "guest",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "100",
+        "user_home": "/dev/null",
+        "user_name": "guest",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "405"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-bcfeed51d4af",
+      "kind": "identity.user_account",
+      "resource": "halt",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "0",
+        "user_home": "/sbin",
+        "user_name": "halt",
+        "user_password_status": "x",
+        "user_shell": "/sbin/halt",
+        "user_uid": "7"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-6435e53fd37e",
+      "kind": "identity.user_account",
+      "resource": "lp",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "7",
+        "user_home": "/var/spool/lpd",
+        "user_name": "lp",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "4"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-85a9b36628d1",
+      "kind": "identity.user_account",
+      "resource": "mail",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "12",
+        "user_home": "/var/mail",
+        "user_name": "mail",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "8"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-3d5705cdb662",
+      "kind": "identity.user_account",
+      "resource": "news",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "13",
+        "user_home": "/usr/lib/news",
+        "user_name": "news",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "9"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-0903695f285d",
+      "kind": "identity.user_account",
+      "resource": "nobody",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "65534",
+        "user_home": "/",
+        "user_name": "nobody",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "65534"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-47937c49908b",
+      "kind": "identity.user_account",
+      "resource": "ntp",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "123",
+        "user_home": "/var/empty",
+        "user_name": "ntp",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "123"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-3cab3e4f0fb7",
+      "kind": "identity.user_account",
+      "resource": "root",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "0",
+        "user_home": "/root",
+        "user_name": "root",
+        "user_password_status": "x",
+        "user_shell": "/bin/sh",
+        "user_uid": "0"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-db14896e79a6",
+      "kind": "identity.user_account",
+      "resource": "shutdown",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "0",
+        "user_home": "/sbin",
+        "user_name": "shutdown",
+        "user_password_status": "x",
+        "user_shell": "/sbin/shutdown",
+        "user_uid": "6"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-b787e5898204",
+      "kind": "identity.user_account",
+      "resource": "sshd",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "22",
+        "user_home": "/dev/null",
+        "user_name": "sshd",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "22"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-00e9b880db3b",
+      "kind": "identity.user_account",
+      "resource": "sync",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "0",
+        "user_home": "/sbin",
+        "user_name": "sync",
+        "user_password_status": "x",
+        "user_shell": "/bin/sync",
+        "user_uid": "5"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-6e8f9b769b6a",
+      "kind": "identity.user_account",
+      "resource": "uucp",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "14",
+        "user_home": "/var/spool/uucppublic",
+        "user_name": "uucp",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "10"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-6effa8b81afd",
+      "kind": "identity.user_account",
+      "resource": "vulntarget",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:19.584079998Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "10001",
+        "user_home": "/home/vulntarget",
+        "user_name": "vulntarget",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "10001"
+      }
+    },
+    {
+      "id": "obs-system-info-57e10ea9b59a",
+      "kind": "system.info",
+      "resource": "host",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "architecture": "amd64",
+        "cgroup_version": "v2",
+        "container": "true",
+        "container_runtime": "docker",
+        "hostname": "42ac17820564",
+        "kernel_release": "7.0.14-linuxkit",
+        "kernel_version": "#1 SMP PREEMPT_DYNAMIC Wed Nov 11 09:41:51 UTC 2026",
+        "os_id": "alpine",
+        "os_name": "Alpine Linux",
+        "os_version": "3.22.8"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-f02ded664b84",
+      "kind": "system.kernel_mitigation",
+      "resource": "gather_data_sampling",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "gather_data_sampling",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/gather_data_sampling"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-e1e685c0e4f7",
+      "kind": "system.kernel_mitigation",
+      "resource": "ghostwrite",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "ghostwrite",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/ghostwrite"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-7990e47c4412",
+      "kind": "system.kernel_mitigation",
+      "resource": "indirect_target_selection",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "indirect_target_selection",
+        "mitigation_status": "mitigation_active",
+        "mitigation_value": "Mitigation: Aligned branch/return thunks",
+        "source": "/sys/devices/system/cpu/vulnerabilities/indirect_target_selection"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-2f30fb086448",
+      "kind": "system.kernel_mitigation",
+      "resource": "itlb_multihit",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "itlb_multihit",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/itlb_multihit"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-1c3fab4a52ab",
+      "kind": "system.kernel_mitigation",
+      "resource": "l1tf",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "l1tf",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/l1tf"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-0f692359b7a6",
+      "kind": "system.kernel_mitigation",
+      "resource": "mds",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "mds",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/mds"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-234836252382",
+      "kind": "system.kernel_mitigation",
+      "resource": "meltdown",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "meltdown",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/meltdown"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-a268a7cdbaed",
+      "kind": "system.kernel_mitigation",
+      "resource": "mmio_stale_data",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "mmio_stale_data",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/mmio_stale_data"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-6101cc37c433",
+      "kind": "system.kernel_mitigation",
+      "resource": "old_microcode",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "old_microcode",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/old_microcode"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-7056f1b9b090",
+      "kind": "system.kernel_mitigation",
+      "resource": "reg_file_data_sampling",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "reg_file_data_sampling",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/reg_file_data_sampling"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-efdb983716b4",
+      "kind": "system.kernel_mitigation",
+      "resource": "retbleed",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "retbleed",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/retbleed"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-f3a633e093be",
+      "kind": "system.kernel_mitigation",
+      "resource": "spec_rstack_overflow",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "spec_rstack_overflow",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/spec_rstack_overflow"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-568d2134e765",
+      "kind": "system.kernel_mitigation",
+      "resource": "spec_store_bypass",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "spec_store_bypass",
+        "mitigation_status": "mitigation_active",
+        "mitigation_value": "Mitigation: Speculative Store Bypass disabled via prctl",
+        "source": "/sys/devices/system/cpu/vulnerabilities/spec_store_bypass"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-4320d76a2d10",
+      "kind": "system.kernel_mitigation",
+      "resource": "spectre_v1",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "spectre_v1",
+        "mitigation_status": "mitigation_active",
+        "mitigation_value": "Mitigation: usercopy/swapgs barriers and __user pointer sanitization",
+        "source": "/sys/devices/system/cpu/vulnerabilities/spectre_v1"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-56173027aca3",
+      "kind": "system.kernel_mitigation",
+      "resource": "spectre_v2",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "spectre_v2",
+        "mitigation_status": "vulnerable",
+        "mitigation_value": "Vulnerable: eIBRS with unprivileged eBPF",
+        "source": "/sys/devices/system/cpu/vulnerabilities/spectre_v2"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-13eb8b5e7b89",
+      "kind": "system.kernel_mitigation",
+      "resource": "srbds",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "srbds",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/srbds"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-62a406099b97",
+      "kind": "system.kernel_mitigation",
+      "resource": "tsa",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "tsa",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/tsa"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-419662891f62",
+      "kind": "system.kernel_mitigation",
+      "resource": "tsx_async_abort",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "tsx_async_abort",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/tsx_async_abort"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-b411db48f102",
+      "kind": "system.kernel_mitigation",
+      "resource": "vmscape",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "vmscape",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/vmscape"
+      }
+    },
+    {
+      "id": "obs-system-security_control-868ca5d20f3f",
+      "kind": "system.security_control",
+      "resource": "lsm:list",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "unavailable",
+      "attributes": {
+        "source": "/sys/kernel/security/lsm"
+      },
+      "error": {
+        "class": "not_found",
+        "message": "LSM list is not readable; security modules cannot be confirmed"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-7002fb9175a9",
+      "kind": "system.sysctl",
+      "resource": "fs.protected_fifos",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/fs/protected_fifos",
+        "value": "0"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-717e3381bd44",
+      "kind": "system.sysctl",
+      "resource": "fs.protected_hardlinks",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/fs/protected_hardlinks",
+        "value": "1"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-4fa73728e468",
+      "kind": "system.sysctl",
+      "resource": "fs.protected_regular",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/fs/protected_regular",
+        "value": "0"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-14020f0c638d",
+      "kind": "system.sysctl",
+      "resource": "fs.protected_symlinks",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/fs/protected_symlinks",
+        "value": "1"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-a77342597b92",
+      "kind": "system.sysctl",
+      "resource": "kernel.dmesg_restrict",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/dmesg_restrict",
+        "value": "1"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-b9e7e06b2981",
+      "kind": "system.sysctl",
+      "resource": "kernel.kptr_restrict",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/kptr_restrict",
+        "value": "0"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-2ccf8a9655dd",
+      "kind": "system.sysctl",
+      "resource": "kernel.perf_event_paranoid",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/perf_event_paranoid",
+        "value": "2"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-adb35803d036",
+      "kind": "system.sysctl",
+      "resource": "kernel.randomize_va_space",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/randomize_va_space",
+        "value": "2"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-f16ce717cb18",
+      "kind": "system.sysctl",
+      "resource": "kernel.suid_dumpable",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "unavailable",
+      "attributes": {
+        "source": "/proc/sys/kernel/suid_dumpable"
+      },
+      "error": {
+        "class": "not_found",
+        "message": "this kernel does not expose the parameter"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-af6a15a614ef",
+      "kind": "system.sysctl",
+      "resource": "kernel.unprivileged_bpf_disabled",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/unprivileged_bpf_disabled",
+        "value": "0"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-9320475138f5",
+      "kind": "system.sysctl",
+      "resource": "kernel.unprivileged_userns_clone",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/unprivileged_userns_clone",
+        "value": "1"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-2552919b5a75",
+      "kind": "system.sysctl",
+      "resource": "kernel.yama.ptrace_scope",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:19.582923443Z",
+      "status": "unavailable",
+      "attributes": {
+        "source": "/proc/sys/kernel/yama/ptrace_scope"
+      },
+      "error": {
+        "class": "not_found",
+        "message": "this kernel does not expose the parameter"
+      }
+    }
+  ],
+  "stats": {
+    "observations": 57,
+    "unavailable_observations": 6,
+    "findings": 1,
+    "evidence": 3,
+    "rules": {
+      "total": 5,
+      "executed": 4,
+      "skipped": 1,
+      "failed": 0
+    },
+    "collectors": [
+      {
+        "name": "linux.system",
+        "status": "ok",
+        "observations": 33,
+        "duration_ms": 2
+      },
+      {
+        "name": "linux.identity",
+        "status": "ok",
+        "observations": 21,
+        "duration_ms": 2
+      },
+      {
+        "name": "linux.sudo",
+        "status": "ok",
+        "observations": 0,
+        "duration_ms": 0
+      },
+      {
+        "name": "linux.cron",
+        "status": "ok",
+        "observations": 2,
+        "duration_ms": 0
+      },
+      {
+        "name": "linux.sshd",
+        "status": "ok",
+        "observations": 1,
+        "duration_ms": 1
+      }
+    ]
+  },
+  "coverage": {
+    "status": "complete",
+    "execution_complete": true,
+    "coverage_complete": true,
+    "files_examined": 0,
+    "directories_examined": 0,
+    "traversal_errors": 0,
+    "permission_denied": 0,
+    "unavailable_observations": 6,
+    "unsupported_observations": 0,
+    "truncated_roots": [],
+    "excluded_roots": [],
+    "skipped_rules": [
+      {
+        "rule_id": "NULQ-ID-002",
+        "reason": "missing observations: identity.sudo_rule"
+      }
+    ],
+    "failed_operations": [],
+    "roots": []
+  },
+  "limitations": [
+    "Permission checks use ownership and mode bits together with POSIX ACLs when ACL state is observed; security-module policy is not evaluated, and unreadable or malformed ACL state is reported as unknown rather than assumed.",
+    "Process observations cover numeric identity, lifecycle and executable-path context only; environments, command lines, memory maps and file descriptors are never read, so process intent and runtime behavior are not assessed.",
+    "Discovery runs with the privileges of the invoking user; unreadable paths are reported as unavailable, never bypassed.",
+    "Findings describe observed configuration relationships. NULQ does not execute discovered binaries or services and does not attempt exploitation.",
+    "The absence of a finding is not evidence that the system is secure."
+  ]
+}

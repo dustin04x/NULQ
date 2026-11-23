@@ -1,0 +1,108 @@
+# NULQ vulnerable-target laboratory.
+#
+# Every service shares one hardened baseline: unprivileged user, all
+# capabilities dropped, no-new-privileges, read-only root filesystem,
+# size-limited noexec/nosuid/nodev /tmp, no network and no host namespaces.
+# Only the nulq binary is mounted, read-only, and only the fixtures the target
+# image already contains are visible.
+#
+# Cleanup is scoped to project "nulq-vulntarget" and the
+# com.nulq.vulnerable-target label. It never touches nulq-lab resources.
+
+name: nulq-vulntarget
+
+x-vt-image: &vt-image
+  image: ${VT_IMAGE:-nulq-vulntarget/alpine-target:3.22}
+  build:
+    context: .
+    labels:
+      com.nulq.vulnerable-target: "true"
+
+x-vt-security: &vt-security
+  image: ${VT_IMAGE:-nulq-vulntarget/alpine-target:3.22}
+  user: "10001:10001"
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  network_mode: none
+  pull_policy: never
+  init: false
+  restart: "no"
+  labels:
+    com.nulq.vulnerable-target: "true"
+  volumes:
+    - type: bind
+      source: ${NULQ_BINARY:-../../bin/nulq}
+      target: /opt/nulq/nulq
+      read_only: true
+      bind:
+        create_host_path: false
+
+x-vt-tmpfs: &vt-tmpfs
+  - "/tmp:rw,noexec,nosuid,nodev,size=1m,mode=1777"
+
+services:
+  # Baseline assessment of the vulnerable-target live userland.
+  nulq-baseline:
+    <<: *vt-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--root", "/"]
+    tmpfs:
+      - "/tmp:rw,noexec,nosuid,nodev,size=1m,mode=1777"
+
+  # Filesystem fixtures: SUID/SGID, world-writable, unsafe PATH, ancestry,
+  # permission mistakes, unreadable subtree.
+  nulq-fixtures:
+    <<: *vt-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--root", "/lab/fixtures"]
+    tmpfs: *vt-tmpfs
+
+  # Hostile PATH: writable directory, empty element, symlink, late-writable.
+  nulq-path:
+    <<: *vt-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--root", "/lab/fixtures"]
+    environment:
+      PATH: "/lab/fixtures/path/writable::/lab/fixtures/path/safe:/lab/fixtures/links/path-link:/lab/fixtures/path/late-writable:/lab/fixtures/path/other-owned:/usr/bin:/bin"
+    tmpfs: *vt-tmpfs
+
+  # Identity: wheel supplementary group membership granted at runtime.
+  nulq-identity:
+    <<: *vt-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--modules", "identity"]
+    group_add:
+      - "10"
+    tmpfs: *vt-tmpfs
+
+  # Application configuration permission assessment.
+  nulq-app:
+    <<: *vt-security
+    entrypoint: ["/opt/nulq/nulq"]
+    command:
+      ["scan", "--format", "json", "--observations", "--color", "never",
+       "--root", "/lab/fixtures/app"]
+    tmpfs: *vt-tmpfs
+
+  # Long-running target for manual inspection.
+  vuln-target:
+    <<: [*vt-image, *vt-security]
+    entrypoint: ["/bin/sleep", "infinity"]
+    tmpfs: *vt-tmpfs
+
+  # Isolation proof: reports the security properties from inside the sandbox.
+  vuln-probe:
+    <<: *vt-security
+    entrypoint: ["/bin/sh", "/lab/probe.sh"]
+    tmpfs: *vt-tmpfs

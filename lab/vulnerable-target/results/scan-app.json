@@ -1,0 +1,2305 @@
+{
+  "schema_version": "1.1",
+  "tool": {
+    "name": "nulq",
+    "version": "0.1.0-dev",
+    "commit": "a9cb885",
+    "build_date": "2026-11-22T11:08:39Z",
+    "go_version": "go1.27.4-X:nodwarf5",
+    "platform": "linux/amd64"
+  },
+  "host": {
+    "hostname": "8e17c9e19e08",
+    "os_id": "alpine",
+    "os_name": "Alpine Linux",
+    "os_version": "3.22.8",
+    "kernel_release": "7.0.14-linuxkit",
+    "architecture": "amd64",
+    "container": true,
+    "container_runtime": "docker"
+  },
+  "scan": {
+    "report_id": "rpt-1c2588bd7a69",
+    "started_at": "2026-11-22T11:12:20.304490802Z",
+    "finished_at": "2026-11-22T11:12:20.308694947Z",
+    "duration_ms": 4,
+    "modules": [
+      "filesystem",
+      "identity",
+      "process",
+      "system"
+    ],
+    "scan_roots": [
+      "/lab/fixtures/app"
+    ],
+    "unprivileged": true,
+    "partial": false
+  },
+  "findings": [
+    {
+      "id": "fnd-9be26e3e046f",
+      "rule_id": "NULQ-SYS-007",
+      "rule_version": "1.0.0",
+      "title": "Kernel vulnerability is unmitigated: spectre_v2",
+      "description": "The kernel exposes hardware vulnerability mitigation status (Spectre, Meltdown, L1TF, MDS, etc.) through sysfs. NULQ records whether each mitigation is active, partial or absent.",
+      "category": "kernel-hardening",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "resource": "spectre_v2",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-4b180a2e089c",
+        "ev-47865d86f1d9"
+      ],
+      "explanation": "Kernel reports \"vulnerable\" status \"Vulnerable: eIBRS with unprivileged eBPF\" for hardware vulnerability spectre_v2. Value: Vulnerable: eIBRS with unprivileged eBPF.",
+      "impact": "An unmitigated or partially mitigated hardware vulnerability may be exploitable by local processes to leak memory or bypass isolation boundaries.",
+      "remediation": "Update the kernel and firmware, enable mitigations via boot parameters, and consult the distribution's hardening guidance for each vulnerability.",
+      "limitations": [
+        "Mitigation status is read from sysfs; NULQ does not test whether an exploit applies to the running kernel.",
+        "Some mitigations carry performance costs and may be intentionally disabled."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854905Z"
+    },
+    {
+      "id": "fnd-ab806d1b640b",
+      "rule_id": "NULQ-SYS-001",
+      "rule_version": "1.0.0",
+      "title": "Kernel hardening parameter is below the recommended baseline",
+      "description": "A security-relevant kernel parameter is set below a conservative baseline, expanding the attack surface available to unprivileged users.",
+      "category": "kernel-hardening",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "resource": "kernel.kptr_restrict",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-cf286c0efbd0"
+      ],
+      "explanation": "The kernel parameter kernel.kptr_restrict is 0, which does not meet the baseline (at least 1). Kernel pointers are exposed through several interfaces; unrestricted values aid exploit development.",
+      "impact": "The weaker setting expands what unprivileged local processes can observe or exercise in the kernel. It is a hardening gap, not by itself a vulnerability.",
+      "remediation": "Set kernel.kptr_restrict=1 or 2 in /etc/sysctl.d/.",
+      "limitations": [
+        "Baselines are conservative defaults; some environments require different values for workload compatibility.",
+        "This rule does not assess whether a known exploit applies to the running kernel."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854825Z"
+    },
+    {
+      "id": "fnd-fb6b391fe89c",
+      "rule_id": "NULQ-SYS-001",
+      "rule_version": "1.0.0",
+      "title": "Kernel hardening parameter is below the recommended baseline",
+      "description": "A security-relevant kernel parameter is set below a conservative baseline, expanding the attack surface available to unprivileged users.",
+      "category": "kernel-hardening",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "resource": "kernel.unprivileged_bpf_disabled",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-b7629a013c14"
+      ],
+      "explanation": "The kernel parameter kernel.unprivileged_bpf_disabled is 0, which does not meet the baseline (at least 1). Unprivileged BPF program loading has been a recurring source of kernel privilege-escalation primitives.",
+      "impact": "The weaker setting expands what unprivileged local processes can observe or exercise in the kernel. It is a hardening gap, not by itself a vulnerability.",
+      "remediation": "Set kernel.unprivileged_bpf_disabled=1 in /etc/sysctl.d/ or at boot.",
+      "limitations": [
+        "Baselines are conservative defaults; some environments require different values for workload compatibility.",
+        "This rule does not assess whether a known exploit applies to the running kernel."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854825Z"
+    },
+    {
+      "id": "fnd-79d1ee4d5dcc",
+      "rule_id": "NULQ-SYS-001",
+      "rule_version": "1.0.0",
+      "title": "Kernel hardening parameter is below the recommended baseline",
+      "description": "A security-relevant kernel parameter is set below a conservative baseline, expanding the attack surface available to unprivileged users.",
+      "category": "kernel-hardening",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "resource": "fs.protected_fifos",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-4088a9ba4219"
+      ],
+      "explanation": "The kernel parameter fs.protected_fifos is 0, which does not meet the baseline (at least 1). FIFO protection blocks a class of writes into privileged processes through pre-created pipes.",
+      "impact": "The weaker setting expands what unprivileged local processes can observe or exercise in the kernel. It is a hardening gap, not by itself a vulnerability.",
+      "remediation": "Set fs.protected_fifos=1 in /etc/sysctl.d/.",
+      "limitations": [
+        "Baselines are conservative defaults; some environments require different values for workload compatibility.",
+        "This rule does not assess whether a known exploit applies to the running kernel."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854825Z"
+    },
+    {
+      "id": "fnd-095f44ea00a4",
+      "rule_id": "NULQ-SYS-001",
+      "rule_version": "1.0.0",
+      "title": "Kernel hardening parameter is below the recommended baseline",
+      "description": "A security-relevant kernel parameter is set below a conservative baseline, expanding the attack surface available to unprivileged users.",
+      "category": "kernel-hardening",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "resource": "fs.protected_regular",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-3752d06c4977"
+      ],
+      "explanation": "The kernel parameter fs.protected_regular is 0, which does not meet the baseline (at least 1). Regular-file protection prevents privileged opens from following attacker-planted files in sticky directories.",
+      "impact": "The weaker setting expands what unprivileged local processes can observe or exercise in the kernel. It is a hardening gap, not by itself a vulnerability.",
+      "remediation": "Set fs.protected_regular=1 in /etc/sysctl.d/.",
+      "limitations": [
+        "Baselines are conservative defaults; some environments require different values for workload compatibility.",
+        "This rule does not assess whether a known exploit applies to the running kernel."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854825Z"
+    },
+    {
+      "id": "fnd-554368f8e0f8",
+      "rule_id": "NULQ-SYS-001",
+      "rule_version": "1.0.0",
+      "title": "Kernel hardening parameter is below the recommended baseline",
+      "description": "A security-relevant kernel parameter is set below a conservative baseline, expanding the attack surface available to unprivileged users.",
+      "category": "kernel-hardening",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "resource": "kernel.unprivileged_userns_clone",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-dbcb1c192fbf"
+      ],
+      "explanation": "The kernel parameter kernel.unprivileged_userns_clone is 1, which does not meet the baseline (0). Unprivileged user namespaces widen the kernel surface reachable by unprivileged users on distributions that expose this switch.",
+      "impact": "The weaker setting expands what unprivileged local processes can observe or exercise in the kernel. It is a hardening gap, not by itself a vulnerability.",
+      "remediation": "Set kernel.unprivileged_userns_clone=0 where the workload does not require unprivileged namespaces.",
+      "limitations": [
+        "Baselines are conservative defaults; some environments require different values for workload compatibility.",
+        "This rule does not assess whether a known exploit applies to the running kernel."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854825Z"
+    },
+    {
+      "id": "fnd-f05ebbeaba6f",
+      "rule_id": "NULQ-SYS-006",
+      "rule_version": "1.0.0",
+      "title": "Unprivileged user namespace clone is enabled",
+      "description": "The kernel allows unprivileged users to create user namespaces, widening the kernel attack surface reachable from unprivileged processes.",
+      "category": "kernel-hardening",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "resource": "kernel.unprivileged_userns_clone",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-dbcb1c192fbf"
+      ],
+      "explanation": "kernel.unprivileged_userns_clone is 1, allowing unprivileged users to create user namespaces. This widens the kernel surface reachable by unprivileged local processes.",
+      "impact": "User namespaces have been a recurring source of kernel privilege-escalation primitives. Enabling them for unprivileged users increases exploitability of kernel bugs.",
+      "remediation": "Set kernel.unprivileged_userns_clone=0 in /etc/sysctl.d/ or at boot, unless a workload requires unprivileged namespaces.",
+      "limitations": [
+        "This rule does not assess whether a known exploit applies to the running kernel.",
+        "Some containers and sandboxed workloads require unprivileged namespaces to function."
+      ],
+      "detected_at": "2026-11-22T11:12:20.308470147Z"
+    },
+    {
+      "id": "fnd-95b1a5821644",
+      "rule_id": "NULQ-SYS-007",
+      "rule_version": "1.0.0",
+      "title": "Kernel mitigation status: indirect_target_selection",
+      "description": "The kernel exposes hardware vulnerability mitigation status (Spectre, Meltdown, L1TF, MDS, etc.) through sysfs. NULQ records whether each mitigation is active, partial or absent.",
+      "category": "kernel-hardening",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "resource": "indirect_target_selection",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-8a2fde4d42d6",
+        "ev-44409802d61c"
+      ],
+      "explanation": "Kernel reports \"mitigation_active\" status \"Mitigation: Aligned branch/return thunks\" for hardware vulnerability indirect_target_selection. Value: Mitigation: Aligned branch/return thunks.",
+      "impact": "An unmitigated or partially mitigated hardware vulnerability may be exploitable by local processes to leak memory or bypass isolation boundaries.",
+      "remediation": "Update the kernel and firmware, enable mitigations via boot parameters, and consult the distribution's hardening guidance for each vulnerability.",
+      "limitations": [
+        "Mitigation status is read from sysfs; NULQ does not test whether an exploit applies to the running kernel.",
+        "Some mitigations carry performance costs and may be intentionally disabled."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854905Z"
+    },
+    {
+      "id": "fnd-0eeddf1b6574",
+      "rule_id": "NULQ-SYS-007",
+      "rule_version": "1.0.0",
+      "title": "Kernel mitigation status: spec_store_bypass",
+      "description": "The kernel exposes hardware vulnerability mitigation status (Spectre, Meltdown, L1TF, MDS, etc.) through sysfs. NULQ records whether each mitigation is active, partial or absent.",
+      "category": "kernel-hardening",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "resource": "spec_store_bypass",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-0e2daa31c9aa",
+        "ev-96432a80d3f3"
+      ],
+      "explanation": "Kernel reports \"mitigation_active\" status \"Mitigation: Speculative Store Bypass disabled via prctl\" for hardware vulnerability spec_store_bypass. Value: Mitigation: Speculative Store Bypass disabled via prctl.",
+      "impact": "An unmitigated or partially mitigated hardware vulnerability may be exploitable by local processes to leak memory or bypass isolation boundaries.",
+      "remediation": "Update the kernel and firmware, enable mitigations via boot parameters, and consult the distribution's hardening guidance for each vulnerability.",
+      "limitations": [
+        "Mitigation status is read from sysfs; NULQ does not test whether an exploit applies to the running kernel.",
+        "Some mitigations carry performance costs and may be intentionally disabled."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854905Z"
+    },
+    {
+      "id": "fnd-63491ccf6fff",
+      "rule_id": "NULQ-SYS-007",
+      "rule_version": "1.0.0",
+      "title": "Kernel mitigation status: spectre_v1",
+      "description": "The kernel exposes hardware vulnerability mitigation status (Spectre, Meltdown, L1TF, MDS, etc.) through sysfs. NULQ records whether each mitigation is active, partial or absent.",
+      "category": "kernel-hardening",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "resource": "spectre_v1",
+      "resource_kind": "sysctl",
+      "evidence": [
+        "ev-517d666a43b4",
+        "ev-34fa237c55cb"
+      ],
+      "explanation": "Kernel reports \"mitigation_active\" status \"Mitigation: usercopy/swapgs barriers and __user pointer sanitization\" for hardware vulnerability spectre_v1. Value: Mitigation: usercopy/swapgs barriers and __user pointer sanitization.",
+      "impact": "An unmitigated or partially mitigated hardware vulnerability may be exploitable by local processes to leak memory or bypass isolation boundaries.",
+      "remediation": "Update the kernel and firmware, enable mitigations via boot parameters, and consult the distribution's hardening guidance for each vulnerability.",
+      "limitations": [
+        "Mitigation status is read from sysfs; NULQ does not test whether an exploit applies to the running kernel.",
+        "Some mitigations carry performance costs and may be intentionally disabled."
+      ],
+      "detected_at": "2026-11-22T11:12:20.30854905Z"
+    },
+    {
+      "id": "fnd-09c72cea1c24",
+      "rule_id": "NULQ-SYS-008",
+      "rule_version": "1.0.0",
+      "title": "Container marker file present",
+      "description": "Marker files and sockets indicate the assessment target is a container or has container runtime tooling installed. NULQ never connects to the Docker socket or contacts any runtime.",
+      "category": "containers",
+      "severity": "INFO",
+      "confidence": "HIGH",
+      "resource": "/.dockerenv",
+      "resource_kind": "file",
+      "evidence": [
+        "ev-e36fddaf0473"
+      ],
+      "explanation": "/.dockerenv was observed on the assessed system. This indicates container runtime tooling or a containerised assessment target.",
+      "impact": "Container runtime presence expands the privilege surface: container escapes, socket mounting and runtime configuration are out of scope for this rule.",
+      "remediation": "If the Docker socket is present and accessible to unprivileged users, restrict its permissions. Ensure container runtimes are not exposed to untrusted workloads.",
+      "limitations": [
+        "Indicator presence does not mean the runtime is running, accessible or exploitable.",
+        "NULQ never connects to any socket or contacts any runtime."
+      ],
+      "detected_at": "2026-11-22T11:12:20.308498541Z"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-0e2daa31c9aa",
+      "observation_id": "obs-system-kernel_mitigation-568d2134e765",
+      "resource": "spec_store_bypass",
+      "resource_kind": "system",
+      "collector": "linux.system",
+      "field": "mitigation_value",
+      "observed_value": "Mitigation: Speculative Store Bypass disabled via prctl",
+      "explanation": "Kernel-reported mitigation status value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-34fa237c55cb",
+      "observation_id": "obs-system-kernel_mitigation-4320d76a2d10",
+      "resource": "spectre_v1",
+      "resource_kind": "system",
+      "collector": "linux.system",
+      "field": "mitigation_status",
+      "observed_value": "mitigation_active",
+      "explanation": "Normalised mitigation status.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-3752d06c4977",
+      "observation_id": "obs-system-sysctl-4fa73728e468",
+      "resource": "fs.protected_regular",
+      "resource_kind": "sysctl",
+      "collector": "linux.system",
+      "field": "value",
+      "observed_value": "0",
+      "expected_value": "at least 1",
+      "explanation": "Current kernel parameter value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-4088a9ba4219",
+      "observation_id": "obs-system-sysctl-7002fb9175a9",
+      "resource": "fs.protected_fifos",
+      "resource_kind": "sysctl",
+      "collector": "linux.system",
+      "field": "value",
+      "observed_value": "0",
+      "expected_value": "at least 1",
+      "explanation": "Current kernel parameter value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-44409802d61c",
+      "observation_id": "obs-system-kernel_mitigation-7990e47c4412",
+      "resource": "indirect_target_selection",
+      "resource_kind": "system",
+      "collector": "linux.system",
+      "field": "mitigation_status",
+      "observed_value": "mitigation_active",
+      "explanation": "Normalised mitigation status.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-47865d86f1d9",
+      "observation_id": "obs-system-kernel_mitigation-56173027aca3",
+      "resource": "spectre_v2",
+      "resource_kind": "system",
+      "collector": "linux.system",
+      "field": "mitigation_status",
+      "observed_value": "vulnerable",
+      "explanation": "Normalised mitigation status.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-4b180a2e089c",
+      "observation_id": "obs-system-kernel_mitigation-56173027aca3",
+      "resource": "spectre_v2",
+      "resource_kind": "system",
+      "collector": "linux.system",
+      "field": "mitigation_value",
+      "observed_value": "Vulnerable: eIBRS with unprivileged eBPF",
+      "explanation": "Kernel-reported mitigation status value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-517d666a43b4",
+      "observation_id": "obs-system-kernel_mitigation-4320d76a2d10",
+      "resource": "spectre_v1",
+      "resource_kind": "system",
+      "collector": "linux.system",
+      "field": "mitigation_value",
+      "observed_value": "Mitigation: usercopy/swapgs barriers and __user pointer sanitization",
+      "explanation": "Kernel-reported mitigation status value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-8a2fde4d42d6",
+      "observation_id": "obs-system-kernel_mitigation-7990e47c4412",
+      "resource": "indirect_target_selection",
+      "resource_kind": "system",
+      "collector": "linux.system",
+      "field": "mitigation_value",
+      "observed_value": "Mitigation: Aligned branch/return thunks",
+      "explanation": "Kernel-reported mitigation status value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-96432a80d3f3",
+      "observation_id": "obs-system-kernel_mitigation-568d2134e765",
+      "resource": "spec_store_bypass",
+      "resource_kind": "system",
+      "collector": "linux.system",
+      "field": "mitigation_status",
+      "observed_value": "mitigation_active",
+      "explanation": "Normalised mitigation status.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-b7629a013c14",
+      "observation_id": "obs-system-sysctl-af6a15a614ef",
+      "resource": "kernel.unprivileged_bpf_disabled",
+      "resource_kind": "sysctl",
+      "collector": "linux.system",
+      "field": "value",
+      "observed_value": "0",
+      "expected_value": "at least 1",
+      "explanation": "Current kernel parameter value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-cf286c0efbd0",
+      "observation_id": "obs-system-sysctl-b9e7e06b2981",
+      "resource": "kernel.kptr_restrict",
+      "resource_kind": "sysctl",
+      "collector": "linux.system",
+      "field": "value",
+      "observed_value": "0",
+      "expected_value": "at least 1",
+      "explanation": "Current kernel parameter value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-dbcb1c192fbf",
+      "observation_id": "obs-system-sysctl-9320475138f5",
+      "resource": "kernel.unprivileged_userns_clone",
+      "resource_kind": "sysctl",
+      "collector": "linux.system",
+      "field": "value",
+      "observed_value": "1",
+      "expected_value": "0",
+      "explanation": "Current kernel parameter value.",
+      "collected_at": "2026-11-22T11:12:20.305203879Z"
+    },
+    {
+      "id": "ev-e36fddaf0473",
+      "observation_id": "obs-system-container_indicator-ca948614c304",
+      "resource": "/.dockerenv",
+      "resource_kind": "system",
+      "collector": "linux.container",
+      "field": "container_mount",
+      "observed_value": "true",
+      "explanation": "Container marker file exists on the assessed system.",
+      "collected_at": "2026-11-22T11:12:20.306620678Z"
+    }
+  ],
+  "observations": [
+    {
+      "id": "obs-filesystem-directory-f911f4a26016",
+      "kind": "filesystem.directory",
+      "resource": "/lab/fixtures/app/config/writable",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "acl_default_status": "none",
+        "acl_status": "none",
+        "effective_exec": "allowed",
+        "effective_write": "allowed",
+        "fstype": "overlay",
+        "group_gid": "0",
+        "group_name": "root",
+        "group_writable": "true",
+        "mode": "0777",
+        "mode_symbolic": "rwxrwxrwx",
+        "mount_id": "103",
+        "mount_point": "/",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "owner_uid": "0",
+        "owner_user": "root",
+        "read_only": "true",
+        "sticky": "false",
+        "world_writable": "true",
+        "writable_by_current_user": "true"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-80cc9e397fab",
+      "kind": "filesystem.mount",
+      "resource": "/",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "overlay",
+        "fstype": "overlay",
+        "major_minor": "0:45",
+        "mount_id": "103",
+        "mount_optional": "",
+        "mount_options": "ro,relatime",
+        "mount_point": "/",
+        "mount_root": "/",
+        "mount_source": "overlay",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "parent_mount_id": "69",
+        "read_only": "true",
+        "super_options": "rw,lowerdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/674/fs:/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/612/fs:/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/611/fs:/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/610/fs:/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/609/fs:/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/608/fs:/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/11/fs,upperdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/675/fs,workdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/675/work,nouserxattr"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-0e19775c3f7d",
+      "kind": "filesystem.mount",
+      "resource": "/dev",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "tmpfs",
+        "fstype": "tmpfs",
+        "major_minor": "0:55",
+        "mount_id": "106",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid",
+        "mount_point": "/dev",
+        "mount_root": "/",
+        "mount_source": "tmpfs",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "true",
+        "parent_mount_id": "103",
+        "read_only": "false",
+        "super_options": "rw,size=65536k,mode=755"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-7682fcec9330",
+      "kind": "filesystem.mount",
+      "resource": "/dev/mqueue",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "mqueue",
+        "fstype": "mqueue",
+        "major_minor": "0:52",
+        "mount_id": "110",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid,nodev,noexec,relatime",
+        "mount_point": "/dev/mqueue",
+        "mount_root": "/",
+        "mount_source": "mqueue",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "106",
+        "read_only": "false",
+        "super_options": "rw"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-1c37b1c56456",
+      "kind": "filesystem.mount",
+      "resource": "/dev/pts",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "devpts",
+        "fstype": "devpts",
+        "major_minor": "0:56",
+        "mount_id": "107",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid,noexec,relatime",
+        "mount_point": "/dev/pts",
+        "mount_root": "/",
+        "mount_source": "devpts",
+        "nodev": "false",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "106",
+        "read_only": "false",
+        "super_options": "rw,gid=5,mode=620,ptmxmode=666"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-6561ea38ed38",
+      "kind": "filesystem.mount",
+      "resource": "/dev/shm",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "shm",
+        "fstype": "tmpfs",
+        "major_minor": "0:58",
+        "mount_id": "111",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid,nodev,noexec,relatime",
+        "mount_point": "/dev/shm",
+        "mount_root": "/",
+        "mount_source": "shm",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "106",
+        "read_only": "false",
+        "super_options": "rw,size=65536k"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-b0d6e113e22c",
+      "kind": "filesystem.mount",
+      "resource": "/etc/hostname",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "/dev/vda1",
+        "fstype": "ext4",
+        "major_minor": "254:1",
+        "mount_id": "113",
+        "mount_optional": "",
+        "mount_options": "ro,relatime",
+        "mount_point": "/etc/hostname",
+        "mount_root": "/docker/containers/8e17c9e19e085e9281bae15f6a4220ff5ebdd21bb0e41afdcd3995e7cf0ee804/hostname",
+        "mount_source": "/dev/vda1",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "parent_mount_id": "103",
+        "read_only": "true",
+        "super_options": "rw,discard,noauto_da_alloc"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-94a34d68ef73",
+      "kind": "filesystem.mount",
+      "resource": "/etc/hosts",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "/dev/vda1",
+        "fstype": "ext4",
+        "major_minor": "254:1",
+        "mount_id": "114",
+        "mount_optional": "",
+        "mount_options": "ro,relatime",
+        "mount_point": "/etc/hosts",
+        "mount_root": "/docker/containers/8e17c9e19e085e9281bae15f6a4220ff5ebdd21bb0e41afdcd3995e7cf0ee804/hosts",
+        "mount_source": "/dev/vda1",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "parent_mount_id": "103",
+        "read_only": "true",
+        "super_options": "rw,discard,noauto_da_alloc"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-089827bb3609",
+      "kind": "filesystem.mount",
+      "resource": "/etc/resolv.conf",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "/dev/vda1",
+        "fstype": "ext4",
+        "major_minor": "254:1",
+        "mount_id": "115",
+        "mount_optional": "",
+        "mount_options": "ro,relatime",
+        "mount_point": "/etc/resolv.conf",
+        "mount_root": "/docker/containers/8e17c9e19e085e9281bae15f6a4220ff5ebdd21bb0e41afdcd3995e7cf0ee804/resolv.conf",
+        "mount_source": "/dev/vda1",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "parent_mount_id": "103",
+        "read_only": "true",
+        "super_options": "rw,discard,noauto_da_alloc"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-99450ad4127d",
+      "kind": "filesystem.mount",
+      "resource": "/opt/nulq/nulq",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "/run/host_mark/home",
+        "fstype": "fakeowner",
+        "major_minor": "0:42",
+        "mount_id": "116",
+        "mount_optional": "",
+        "mount_options": "ro,nosuid,nodev,relatime",
+        "mount_point": "/opt/nulq/nulq",
+        "mount_root": "/dustin/Projects/NULQ/bin/nulq",
+        "mount_source": "/run/host_mark/home",
+        "nodev": "true",
+        "noexec": "false",
+        "nosuid": "true",
+        "parent_mount_id": "103",
+        "read_only": "true",
+        "super_options": "rw,fakeowner"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-df8070df376e",
+      "kind": "filesystem.mount",
+      "resource": "/proc",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "proc",
+        "fstype": "proc",
+        "major_minor": "0:54",
+        "mount_id": "105",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid,nodev,noexec,relatime",
+        "mount_point": "/proc",
+        "mount_root": "/",
+        "mount_source": "proc",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "103",
+        "read_only": "false",
+        "super_options": "rw"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-129c15d71b92",
+      "kind": "filesystem.mount",
+      "resource": "/proc/acpi",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "tmpfs",
+        "fstype": "tmpfs",
+        "major_minor": "0:60",
+        "mount_id": "75",
+        "mount_optional": "",
+        "mount_options": "ro,relatime",
+        "mount_point": "/proc/acpi",
+        "mount_root": "/",
+        "mount_source": "tmpfs",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "parent_mount_id": "105",
+        "read_only": "true",
+        "super_options": "ro,size=4k,nr_inodes=1"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-160dee0be4d3",
+      "kind": "filesystem.mount",
+      "resource": "/proc/bus",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "proc",
+        "fstype": "proc",
+        "major_minor": "0:54",
+        "mount_id": "70",
+        "mount_optional": "",
+        "mount_options": "ro,nosuid,nodev,noexec,relatime",
+        "mount_point": "/proc/bus",
+        "mount_root": "/bus",
+        "mount_source": "proc",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "true",
+        "super_options": "rw"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-62df6065fa16",
+      "kind": "filesystem.mount",
+      "resource": "/proc/fs",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "proc",
+        "fstype": "proc",
+        "major_minor": "0:54",
+        "mount_id": "71",
+        "mount_optional": "",
+        "mount_options": "ro,nosuid,nodev,noexec,relatime",
+        "mount_point": "/proc/fs",
+        "mount_root": "/fs",
+        "mount_source": "proc",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "true",
+        "super_options": "rw"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-44aacc7ee935",
+      "kind": "filesystem.mount",
+      "resource": "/proc/interrupts",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "tmpfs",
+        "fstype": "tmpfs",
+        "major_minor": "0:55",
+        "mount_id": "76",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid",
+        "mount_point": "/proc/interrupts",
+        "mount_root": "/null",
+        "mount_source": "tmpfs",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "false",
+        "super_options": "rw,size=65536k,mode=755"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-7226d00e53f1",
+      "kind": "filesystem.mount",
+      "resource": "/proc/irq",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "proc",
+        "fstype": "proc",
+        "major_minor": "0:54",
+        "mount_id": "72",
+        "mount_optional": "",
+        "mount_options": "ro,nosuid,nodev,noexec,relatime",
+        "mount_point": "/proc/irq",
+        "mount_root": "/irq",
+        "mount_source": "proc",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "true",
+        "super_options": "rw"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-695d913d7414",
+      "kind": "filesystem.mount",
+      "resource": "/proc/kcore",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "tmpfs",
+        "fstype": "tmpfs",
+        "major_minor": "0:55",
+        "mount_id": "77",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid",
+        "mount_point": "/proc/kcore",
+        "mount_root": "/null",
+        "mount_source": "tmpfs",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "false",
+        "super_options": "rw,size=65536k,mode=755"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-6ed57ffef0de",
+      "kind": "filesystem.mount",
+      "resource": "/proc/keys",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "tmpfs",
+        "fstype": "tmpfs",
+        "major_minor": "0:55",
+        "mount_id": "78",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid",
+        "mount_point": "/proc/keys",
+        "mount_root": "/null",
+        "mount_source": "tmpfs",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "false",
+        "super_options": "rw,size=65536k,mode=755"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-c24cd01cfe14",
+      "kind": "filesystem.mount",
+      "resource": "/proc/sys",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "proc",
+        "fstype": "proc",
+        "major_minor": "0:54",
+        "mount_id": "73",
+        "mount_optional": "",
+        "mount_options": "ro,nosuid,nodev,noexec,relatime",
+        "mount_point": "/proc/sys",
+        "mount_root": "/sys",
+        "mount_source": "proc",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "true",
+        "super_options": "rw"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-e07600b9fbc5",
+      "kind": "filesystem.mount",
+      "resource": "/proc/sysrq-trigger",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "proc",
+        "fstype": "proc",
+        "major_minor": "0:54",
+        "mount_id": "74",
+        "mount_optional": "",
+        "mount_options": "ro,nosuid,nodev,noexec,relatime",
+        "mount_point": "/proc/sysrq-trigger",
+        "mount_root": "/sysrq-trigger",
+        "mount_source": "proc",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "true",
+        "super_options": "rw"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-97c7a5a45a24",
+      "kind": "filesystem.mount",
+      "resource": "/proc/timer_list",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "tmpfs",
+        "fstype": "tmpfs",
+        "major_minor": "0:55",
+        "mount_id": "79",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid",
+        "mount_point": "/proc/timer_list",
+        "mount_root": "/null",
+        "mount_source": "tmpfs",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "true",
+        "parent_mount_id": "105",
+        "read_only": "false",
+        "super_options": "rw,size=65536k,mode=755"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-8c8da0f1cf02",
+      "kind": "filesystem.mount",
+      "resource": "/sys",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "sysfs",
+        "fstype": "sysfs",
+        "major_minor": "0:57",
+        "mount_id": "108",
+        "mount_optional": "",
+        "mount_options": "ro,nosuid,nodev,noexec,relatime",
+        "mount_point": "/sys",
+        "mount_root": "/",
+        "mount_source": "sysfs",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "103",
+        "read_only": "true",
+        "super_options": "ro"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-0176ef700dce",
+      "kind": "filesystem.mount",
+      "resource": "/sys/firmware",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "tmpfs",
+        "fstype": "tmpfs",
+        "major_minor": "0:60",
+        "mount_id": "80",
+        "mount_optional": "",
+        "mount_options": "ro,relatime",
+        "mount_point": "/sys/firmware",
+        "mount_root": "/",
+        "mount_source": "tmpfs",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "parent_mount_id": "108",
+        "read_only": "true",
+        "super_options": "ro,size=4k,nr_inodes=1"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-640eb8689571",
+      "kind": "filesystem.mount",
+      "resource": "/sys/fs/cgroup",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "cgroup",
+        "fstype": "cgroup2",
+        "major_minor": "0:37",
+        "mount_id": "109",
+        "mount_optional": "",
+        "mount_options": "ro,nosuid,nodev,noexec,relatime",
+        "mount_point": "/sys/fs/cgroup",
+        "mount_root": "/",
+        "mount_source": "cgroup",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "108",
+        "read_only": "true",
+        "super_options": "rw"
+      }
+    },
+    {
+      "id": "obs-filesystem-mount-fc87eafc4d08",
+      "kind": "filesystem.mount",
+      "resource": "/tmp",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "assessed": "false",
+        "device": "tmpfs",
+        "fstype": "tmpfs",
+        "major_minor": "0:59",
+        "mount_id": "112",
+        "mount_optional": "",
+        "mount_options": "rw,nosuid,nodev,noexec,relatime",
+        "mount_point": "/tmp",
+        "mount_root": "/",
+        "mount_source": "tmpfs",
+        "nodev": "true",
+        "noexec": "true",
+        "nosuid": "true",
+        "parent_mount_id": "103",
+        "read_only": "false",
+        "super_options": "rw,size=1024k"
+      }
+    },
+    {
+      "id": "obs-filesystem-path_entry-ebaa9197ec28",
+      "kind": "filesystem.path_entry",
+      "resource": "/bin",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "acl_default_status": "none",
+        "acl_status": "none",
+        "effective_exec": "allowed",
+        "effective_write": "denied",
+        "fstype": "overlay",
+        "group_gid": "0",
+        "group_name": "root",
+        "is_directory": "true",
+        "mode": "0755",
+        "mode_symbolic": "rwxr-xr-x",
+        "mount_id": "103",
+        "mount_point": "/",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "owner_uid": "0",
+        "owner_user": "root",
+        "path_entry": "/bin",
+        "path_exists": "true",
+        "path_index": "5",
+        "read_only": "true",
+        "writable_by_current_user": "false"
+      }
+    },
+    {
+      "id": "obs-filesystem-path_entry-a026175f0df3",
+      "kind": "filesystem.path_entry",
+      "resource": "/sbin",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "acl_default_status": "none",
+        "acl_status": "none",
+        "effective_exec": "allowed",
+        "effective_write": "denied",
+        "fstype": "overlay",
+        "group_gid": "0",
+        "group_name": "root",
+        "is_directory": "true",
+        "mode": "0755",
+        "mode_symbolic": "rwxr-xr-x",
+        "mount_id": "103",
+        "mount_point": "/",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "owner_uid": "0",
+        "owner_user": "root",
+        "path_entry": "/sbin",
+        "path_exists": "true",
+        "path_index": "4",
+        "read_only": "true",
+        "writable_by_current_user": "false"
+      }
+    },
+    {
+      "id": "obs-filesystem-path_entry-6ccb850ab208",
+      "kind": "filesystem.path_entry",
+      "resource": "/usr/bin",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "acl_default_status": "none",
+        "acl_status": "none",
+        "effective_exec": "allowed",
+        "effective_write": "denied",
+        "fstype": "overlay",
+        "group_gid": "0",
+        "group_name": "root",
+        "is_directory": "true",
+        "mode": "0755",
+        "mode_symbolic": "rwxr-xr-x",
+        "mount_id": "103",
+        "mount_point": "/",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "owner_uid": "0",
+        "owner_user": "root",
+        "path_entry": "/usr/bin",
+        "path_exists": "true",
+        "path_index": "3",
+        "read_only": "true",
+        "writable_by_current_user": "false"
+      }
+    },
+    {
+      "id": "obs-filesystem-path_entry-cbd8ceaab144",
+      "kind": "filesystem.path_entry",
+      "resource": "/usr/local/bin",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "acl_default_status": "none",
+        "acl_status": "none",
+        "effective_exec": "allowed",
+        "effective_write": "denied",
+        "fstype": "overlay",
+        "group_gid": "0",
+        "group_name": "root",
+        "is_directory": "true",
+        "mode": "0755",
+        "mode_symbolic": "rwxr-xr-x",
+        "mount_id": "103",
+        "mount_point": "/",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "owner_uid": "0",
+        "owner_user": "root",
+        "path_entry": "/usr/local/bin",
+        "path_exists": "true",
+        "path_index": "1",
+        "read_only": "true",
+        "writable_by_current_user": "false"
+      }
+    },
+    {
+      "id": "obs-filesystem-path_entry-0fef1b6a55e2",
+      "kind": "filesystem.path_entry",
+      "resource": "/usr/local/sbin",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "is_directory": "false",
+        "path_entry": "/usr/local/sbin",
+        "path_exists": "false",
+        "path_index": "0"
+      }
+    },
+    {
+      "id": "obs-filesystem-path_entry-c9f3c99effc6",
+      "kind": "filesystem.path_entry",
+      "resource": "/usr/sbin",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "acl_default_status": "none",
+        "acl_status": "none",
+        "effective_exec": "allowed",
+        "effective_write": "denied",
+        "fstype": "overlay",
+        "group_gid": "0",
+        "group_name": "root",
+        "is_directory": "true",
+        "mode": "0755",
+        "mode_symbolic": "rwxr-xr-x",
+        "mount_id": "103",
+        "mount_point": "/",
+        "nodev": "false",
+        "noexec": "false",
+        "nosuid": "false",
+        "owner_uid": "0",
+        "owner_user": "root",
+        "path_entry": "/usr/sbin",
+        "path_exists": "true",
+        "path_index": "2",
+        "read_only": "true",
+        "writable_by_current_user": "false"
+      }
+    },
+    {
+      "id": "obs-filesystem-scan-607be10933b1",
+      "kind": "filesystem.scan",
+      "resource": "/lab/fixtures/app",
+      "collector": "linux.filesystem",
+      "collected_at": "2026-11-22T11:12:20.305711436Z",
+      "status": "complete",
+      "attributes": {
+        "dirs_visited": "4",
+        "files_visited": "4",
+        "scan_denied": "0",
+        "scan_errors": "0",
+        "truncated": "false"
+      }
+    },
+    {
+      "id": "obs-identity-cron_job-6e39ace5509d",
+      "kind": "identity.cron_job",
+      "resource": "/var/spool/cron/crontabs",
+      "collector": "linux.cron",
+      "collected_at": "2026-11-22T11:12:20.306013745Z",
+      "status": "unavailable",
+      "error": {
+        "class": "internal",
+        "message": "read /var/spool/cron/crontabs: is a directory"
+      }
+    },
+    {
+      "id": "obs-identity-cron_job-3e05e8300d1f",
+      "kind": "identity.cron_job",
+      "resource": "/var/spool/cron/crontabs/root",
+      "collector": "linux.cron",
+      "collected_at": "2026-11-22T11:12:20.306013745Z",
+      "status": "unavailable",
+      "error": {
+        "class": "permission_denied",
+        "message": "open /var/spool/cron/crontabs/root: permission denied"
+      }
+    },
+    {
+      "id": "obs-identity-execution_context-9801cf6ed0d4",
+      "kind": "identity.execution_context",
+      "resource": "process:1",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "egid": "10001",
+        "euid": "10001",
+        "gid": "10001",
+        "groups": "vulntarget(10001)",
+        "ns_cgroup": "cgroup:[4026532599]",
+        "ns_ipc": "ipc:[4026532597]",
+        "ns_mount": "mnt:[4026532595]",
+        "ns_net": "net:[4026532600]",
+        "ns_pid": "pid:[4026532598]",
+        "ns_user": "user:[4026531837]",
+        "ns_uts": "uts:[4026532596]",
+        "uid": "10001",
+        "umask": "0022",
+        "username": "vulntarget"
+      }
+    },
+    {
+      "id": "obs-identity-group_membership-f01efb95b813",
+      "kind": "identity.group_membership",
+      "resource": "group:vulntarget",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "group_gid": "10001",
+        "group_name": "vulntarget",
+        "source": "primary",
+        "username": "vulntarget"
+      }
+    },
+    {
+      "id": "obs-identity-ssh_authorized_keys-ec0da7f38748",
+      "kind": "identity.ssh_authorized_keys",
+      "resource": "/root/.ssh/authorized_keys",
+      "collector": "linux.sshd",
+      "collected_at": "2026-11-22T11:12:20.305380881Z",
+      "status": "unavailable",
+      "error": {
+        "class": "permission_denied",
+        "message": "stat /root/.ssh/authorized_keys: permission denied"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-eff70c58d470",
+      "kind": "identity.user_account",
+      "resource": "bin",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "1",
+        "user_home": "/bin",
+        "user_name": "bin",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "1"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-e86968e7f478",
+      "kind": "identity.user_account",
+      "resource": "cron",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "16",
+        "user_home": "/var/spool/cron",
+        "user_name": "cron",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "16"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-39c0eb749ba3",
+      "kind": "identity.user_account",
+      "resource": "daemon",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "2",
+        "user_home": "/sbin",
+        "user_name": "daemon",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "2"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-2b8c745fe14c",
+      "kind": "identity.user_account",
+      "resource": "ftp",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "21",
+        "user_home": "/var/lib/ftp",
+        "user_name": "ftp",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "21"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-714dc538e6a7",
+      "kind": "identity.user_account",
+      "resource": "games",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "35",
+        "user_home": "/usr/games",
+        "user_name": "games",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "35"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-b501d7daf265",
+      "kind": "identity.user_account",
+      "resource": "guest",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "100",
+        "user_home": "/dev/null",
+        "user_name": "guest",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "405"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-bcfeed51d4af",
+      "kind": "identity.user_account",
+      "resource": "halt",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "0",
+        "user_home": "/sbin",
+        "user_name": "halt",
+        "user_password_status": "x",
+        "user_shell": "/sbin/halt",
+        "user_uid": "7"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-6435e53fd37e",
+      "kind": "identity.user_account",
+      "resource": "lp",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "7",
+        "user_home": "/var/spool/lpd",
+        "user_name": "lp",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "4"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-85a9b36628d1",
+      "kind": "identity.user_account",
+      "resource": "mail",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "12",
+        "user_home": "/var/mail",
+        "user_name": "mail",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "8"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-3d5705cdb662",
+      "kind": "identity.user_account",
+      "resource": "news",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "13",
+        "user_home": "/usr/lib/news",
+        "user_name": "news",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "9"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-0903695f285d",
+      "kind": "identity.user_account",
+      "resource": "nobody",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "65534",
+        "user_home": "/",
+        "user_name": "nobody",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "65534"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-47937c49908b",
+      "kind": "identity.user_account",
+      "resource": "ntp",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "123",
+        "user_home": "/var/empty",
+        "user_name": "ntp",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "123"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-3cab3e4f0fb7",
+      "kind": "identity.user_account",
+      "resource": "root",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "0",
+        "user_home": "/root",
+        "user_name": "root",
+        "user_password_status": "x",
+        "user_shell": "/bin/sh",
+        "user_uid": "0"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-db14896e79a6",
+      "kind": "identity.user_account",
+      "resource": "shutdown",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "0",
+        "user_home": "/sbin",
+        "user_name": "shutdown",
+        "user_password_status": "x",
+        "user_shell": "/sbin/shutdown",
+        "user_uid": "6"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-b787e5898204",
+      "kind": "identity.user_account",
+      "resource": "sshd",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "22",
+        "user_home": "/dev/null",
+        "user_name": "sshd",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "22"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-00e9b880db3b",
+      "kind": "identity.user_account",
+      "resource": "sync",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "0",
+        "user_home": "/sbin",
+        "user_name": "sync",
+        "user_password_status": "x",
+        "user_shell": "/bin/sync",
+        "user_uid": "5"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-6e8f9b769b6a",
+      "kind": "identity.user_account",
+      "resource": "uucp",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "14",
+        "user_home": "/var/spool/uucppublic",
+        "user_name": "uucp",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "10"
+      }
+    },
+    {
+      "id": "obs-identity-user_account-6effa8b81afd",
+      "kind": "identity.user_account",
+      "resource": "vulntarget",
+      "collector": "linux.identity",
+      "collected_at": "2026-11-22T11:12:20.305034666Z",
+      "status": "complete",
+      "attributes": {
+        "user_gid": "10001",
+        "user_home": "/home/vulntarget",
+        "user_name": "vulntarget",
+        "user_password_status": "x",
+        "user_shell": "/sbin/nologin",
+        "user_uid": "10001"
+      }
+    },
+    {
+      "id": "obs-process-info-da78382102fc",
+      "kind": "process.info",
+      "resource": "/proc/1",
+      "collector": "linux.process",
+      "collected_at": "2026-11-22T11:12:20.306261131Z",
+      "status": "complete",
+      "attributes": {
+        "cap_bounding": "0000000000000000",
+        "cap_effective": "0000000000000000",
+        "comm": "nulq",
+        "exe_deleted": "false",
+        "exe_gid": "10001",
+        "exe_mode": "0755",
+        "exe_mount_point": "/opt/nulq/nulq",
+        "exe_noexec": "false",
+        "exe_nosuid": "true",
+        "exe_path": "/opt/nulq/nulq",
+        "exe_readable": "true",
+        "exe_regular": "true",
+        "exe_setgid": "false",
+        "exe_setuid": "false",
+        "exe_uid": "10001",
+        "kernel_thread": "false",
+        "parent_acl_status": "none",
+        "parent_effective_exec": "allowed",
+        "parent_effective_write": "denied",
+        "parent_mode": "0755",
+        "parent_mount_point": "/",
+        "parent_noexec": "false",
+        "parent_nosuid": "false",
+        "parent_path": "/opt/nulq",
+        "parent_sticky": "false",
+        "parent_uid": "0",
+        "parent_world_writable": "false",
+        "pid": "1",
+        "ppid": "0",
+        "process_egid": "10001",
+        "process_euid": "10001",
+        "process_gid": "10001",
+        "process_groups": "10001",
+        "process_uid": "10001",
+        "seccomp": "2",
+        "start_time": "26730"
+      }
+    },
+    {
+      "id": "obs-system-container_indicator-ca948614c304",
+      "kind": "system.container_indicator",
+      "resource": "/.dockerenv",
+      "collector": "linux.container",
+      "collected_at": "2026-11-22T11:12:20.306620678Z",
+      "status": "complete",
+      "attributes": {
+        "container_mount": "true"
+      }
+    },
+    {
+      "id": "obs-system-info-57e10ea9b59a",
+      "kind": "system.info",
+      "resource": "host",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "architecture": "amd64",
+        "cgroup_version": "v2",
+        "container": "true",
+        "container_runtime": "docker",
+        "hostname": "8e17c9e19e08",
+        "kernel_release": "7.0.14-linuxkit",
+        "kernel_version": "#1 SMP PREEMPT_DYNAMIC Wed Nov 11 09:41:51 UTC 2026",
+        "os_id": "alpine",
+        "os_name": "Alpine Linux",
+        "os_version": "3.22.8"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-f02ded664b84",
+      "kind": "system.kernel_mitigation",
+      "resource": "gather_data_sampling",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "gather_data_sampling",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/gather_data_sampling"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-e1e685c0e4f7",
+      "kind": "system.kernel_mitigation",
+      "resource": "ghostwrite",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "ghostwrite",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/ghostwrite"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-7990e47c4412",
+      "kind": "system.kernel_mitigation",
+      "resource": "indirect_target_selection",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "indirect_target_selection",
+        "mitigation_status": "mitigation_active",
+        "mitigation_value": "Mitigation: Aligned branch/return thunks",
+        "source": "/sys/devices/system/cpu/vulnerabilities/indirect_target_selection"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-2f30fb086448",
+      "kind": "system.kernel_mitigation",
+      "resource": "itlb_multihit",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "itlb_multihit",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/itlb_multihit"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-1c3fab4a52ab",
+      "kind": "system.kernel_mitigation",
+      "resource": "l1tf",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "l1tf",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/l1tf"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-0f692359b7a6",
+      "kind": "system.kernel_mitigation",
+      "resource": "mds",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "mds",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/mds"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-234836252382",
+      "kind": "system.kernel_mitigation",
+      "resource": "meltdown",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "meltdown",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/meltdown"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-a268a7cdbaed",
+      "kind": "system.kernel_mitigation",
+      "resource": "mmio_stale_data",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "mmio_stale_data",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/mmio_stale_data"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-6101cc37c433",
+      "kind": "system.kernel_mitigation",
+      "resource": "old_microcode",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "old_microcode",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/old_microcode"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-7056f1b9b090",
+      "kind": "system.kernel_mitigation",
+      "resource": "reg_file_data_sampling",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "reg_file_data_sampling",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/reg_file_data_sampling"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-efdb983716b4",
+      "kind": "system.kernel_mitigation",
+      "resource": "retbleed",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "retbleed",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/retbleed"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-f3a633e093be",
+      "kind": "system.kernel_mitigation",
+      "resource": "spec_rstack_overflow",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "spec_rstack_overflow",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/spec_rstack_overflow"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-568d2134e765",
+      "kind": "system.kernel_mitigation",
+      "resource": "spec_store_bypass",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "spec_store_bypass",
+        "mitigation_status": "mitigation_active",
+        "mitigation_value": "Mitigation: Speculative Store Bypass disabled via prctl",
+        "source": "/sys/devices/system/cpu/vulnerabilities/spec_store_bypass"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-4320d76a2d10",
+      "kind": "system.kernel_mitigation",
+      "resource": "spectre_v1",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "spectre_v1",
+        "mitigation_status": "mitigation_active",
+        "mitigation_value": "Mitigation: usercopy/swapgs barriers and __user pointer sanitization",
+        "source": "/sys/devices/system/cpu/vulnerabilities/spectre_v1"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-56173027aca3",
+      "kind": "system.kernel_mitigation",
+      "resource": "spectre_v2",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "spectre_v2",
+        "mitigation_status": "vulnerable",
+        "mitigation_value": "Vulnerable: eIBRS with unprivileged eBPF",
+        "source": "/sys/devices/system/cpu/vulnerabilities/spectre_v2"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-13eb8b5e7b89",
+      "kind": "system.kernel_mitigation",
+      "resource": "srbds",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "srbds",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/srbds"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-62a406099b97",
+      "kind": "system.kernel_mitigation",
+      "resource": "tsa",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "tsa",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/tsa"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-419662891f62",
+      "kind": "system.kernel_mitigation",
+      "resource": "tsx_async_abort",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "tsx_async_abort",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/tsx_async_abort"
+      }
+    },
+    {
+      "id": "obs-system-kernel_mitigation-b411db48f102",
+      "kind": "system.kernel_mitigation",
+      "resource": "vmscape",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "mitigation_name": "vmscape",
+        "mitigation_status": "not_affected",
+        "mitigation_value": "Not affected",
+        "source": "/sys/devices/system/cpu/vulnerabilities/vmscape"
+      }
+    },
+    {
+      "id": "obs-system-security_control-868ca5d20f3f",
+      "kind": "system.security_control",
+      "resource": "lsm:list",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "unavailable",
+      "attributes": {
+        "source": "/sys/kernel/security/lsm"
+      },
+      "error": {
+        "class": "not_found",
+        "message": "LSM list is not readable; security modules cannot be confirmed"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-7002fb9175a9",
+      "kind": "system.sysctl",
+      "resource": "fs.protected_fifos",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/fs/protected_fifos",
+        "value": "0"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-717e3381bd44",
+      "kind": "system.sysctl",
+      "resource": "fs.protected_hardlinks",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/fs/protected_hardlinks",
+        "value": "1"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-4fa73728e468",
+      "kind": "system.sysctl",
+      "resource": "fs.protected_regular",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/fs/protected_regular",
+        "value": "0"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-14020f0c638d",
+      "kind": "system.sysctl",
+      "resource": "fs.protected_symlinks",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/fs/protected_symlinks",
+        "value": "1"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-a77342597b92",
+      "kind": "system.sysctl",
+      "resource": "kernel.dmesg_restrict",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/dmesg_restrict",
+        "value": "1"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-b9e7e06b2981",
+      "kind": "system.sysctl",
+      "resource": "kernel.kptr_restrict",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/kptr_restrict",
+        "value": "0"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-2ccf8a9655dd",
+      "kind": "system.sysctl",
+      "resource": "kernel.perf_event_paranoid",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/perf_event_paranoid",
+        "value": "2"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-adb35803d036",
+      "kind": "system.sysctl",
+      "resource": "kernel.randomize_va_space",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/randomize_va_space",
+        "value": "2"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-f16ce717cb18",
+      "kind": "system.sysctl",
+      "resource": "kernel.suid_dumpable",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "unavailable",
+      "attributes": {
+        "source": "/proc/sys/kernel/suid_dumpable"
+      },
+      "error": {
+        "class": "not_found",
+        "message": "this kernel does not expose the parameter"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-af6a15a614ef",
+      "kind": "system.sysctl",
+      "resource": "kernel.unprivileged_bpf_disabled",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/unprivileged_bpf_disabled",
+        "value": "0"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-9320475138f5",
+      "kind": "system.sysctl",
+      "resource": "kernel.unprivileged_userns_clone",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "complete",
+      "attributes": {
+        "source": "/proc/sys/kernel/unprivileged_userns_clone",
+        "value": "1"
+      }
+    },
+    {
+      "id": "obs-system-sysctl-2552919b5a75",
+      "kind": "system.sysctl",
+      "resource": "kernel.yama.ptrace_scope",
+      "collector": "linux.system",
+      "collected_at": "2026-11-22T11:12:20.305203879Z",
+      "status": "unavailable",
+      "attributes": {
+        "source": "/proc/sys/kernel/yama/ptrace_scope"
+      },
+      "error": {
+        "class": "not_found",
+        "message": "this kernel does not expose the parameter"
+      }
+    }
+  ],
+  "stats": {
+    "observations": 90,
+    "unavailable_observations": 6,
+    "findings": 11,
+    "evidence": 14,
+    "rules": {
+      "total": 20,
+      "executed": 13,
+      "skipped": 7,
+      "failed": 0
+    },
+    "collectors": [
+      {
+        "name": "linux.system",
+        "status": "ok",
+        "observations": 33,
+        "duration_ms": 2
+      },
+      {
+        "name": "linux.identity",
+        "status": "ok",
+        "observations": 20,
+        "duration_ms": 2
+      },
+      {
+        "name": "linux.filesystem",
+        "status": "ok",
+        "observations": 32,
+        "duration_ms": 1
+      },
+      {
+        "name": "linux.process",
+        "status": "ok",
+        "observations": 1,
+        "duration_ms": 1
+      },
+      {
+        "name": "linux.systemd",
+        "status": "ok",
+        "observations": 0,
+        "duration_ms": 0
+      },
+      {
+        "name": "linux.sudo",
+        "status": "ok",
+        "observations": 0,
+        "duration_ms": 0
+      },
+      {
+        "name": "linux.cron",
+        "status": "ok",
+        "observations": 2,
+        "duration_ms": 0
+      },
+      {
+        "name": "linux.container",
+        "status": "ok",
+        "observations": 1,
+        "duration_ms": 0
+      },
+      {
+        "name": "linux.sshd",
+        "status": "ok",
+        "observations": 1,
+        "duration_ms": 1
+      }
+    ]
+  },
+  "coverage": {
+    "status": "complete",
+    "execution_complete": true,
+    "coverage_complete": true,
+    "files_examined": 4,
+    "directories_examined": 4,
+    "traversal_errors": 0,
+    "permission_denied": 0,
+    "unavailable_observations": 6,
+    "unsupported_observations": 0,
+    "truncated_roots": [],
+    "excluded_roots": [],
+    "skipped_rules": [
+      {
+        "rule_id": "NULQ-FS-001",
+        "reason": "missing observations: filesystem.file"
+      },
+      {
+        "rule_id": "NULQ-FS-002",
+        "reason": "missing observations: filesystem.file"
+      },
+      {
+        "rule_id": "NULQ-FS-004",
+        "reason": "missing observations: filesystem.file"
+      },
+      {
+        "rule_id": "NULQ-FS-005",
+        "reason": "missing observations: filesystem.file"
+      },
+      {
+        "rule_id": "NULQ-ID-002",
+        "reason": "missing observations: identity.sudo_rule"
+      },
+      {
+        "rule_id": "NULQ-SYS-005",
+        "reason": "missing observations: system.systemd_unit"
+      },
+      {
+        "rule_id": "NULQ-SYS-009",
+        "reason": "missing observations: system.sshd_config"
+      }
+    ],
+    "failed_operations": [],
+    "roots": [
+      {
+        "root": "/lab/fixtures/app",
+        "status": "complete",
+        "files_examined": 4,
+        "directories_examined": 4,
+        "traversal_errors": 0,
+        "permission_denied": 0,
+        "truncated": false
+      }
+    ]
+  },
+  "limitations": [
+    "Permission checks use ownership and mode bits together with POSIX ACLs when ACL state is observed; security-module policy is not evaluated, and unreadable or malformed ACL state is reported as unknown rather than assumed.",
+    "Process observations cover numeric identity, lifecycle and executable-path context only; environments, command lines, memory maps and file descriptors are never read, so process intent and runtime behavior are not assessed.",
+    "Discovery runs with the privileges of the invoking user; unreadable paths are reported as unavailable, never bypassed.",
+    "Findings describe observed configuration relationships. NULQ does not execute discovered binaries or services and does not attempt exploitation.",
+    "The absence of a finding is not evidence that the system is secure.",
+    "The scan was restricted to caller-supplied roots: /lab/fixtures/app."
+  ]
+}

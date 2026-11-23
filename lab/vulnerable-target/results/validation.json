@@ -1,0 +1,1060 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-22T11:12:20Z",
+  "environment": {
+    "target": "Alpine Linux 3.22 (BusyBox), linux/amd64, deliberately misconfigured",
+    "image": "nulq-vulntarget/alpine-target:3.22",
+    "image_id": "sha256:296dfac6a3f40fd1c24a757979f58f732bf069388a1944bd14704f559e95d03f",
+    "base_image": "alpine:3.22",
+    "base_digest": "sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f",
+    "nulq_version": "nulq 0.1.0-dev",
+    "built_at": "2026-11-22T11:08:41Z",
+    "container_uid": 10001
+  },
+  "isolation": {
+    "probe": {
+      "uid": 10001,
+      "non_root": true,
+      "read_only_root": true,
+      "effective_capabilities": "0000000000000000",
+      "capabilities_dropped": true,
+      "no_new_privileges": true,
+      "network_interfaces": "bonding_masters,erspan0,gre0,gretap0,ip6_vti0,ip6gre0,ip6tnl0,ip_vti0,lo,sit0,tunl0",
+      "network_probe": "routable_v4=0;outbound_connect=blocked",
+      "network_isolated": true,
+      "docker_socket_present": false,
+      "nulq_executable": true,
+      "tmp_writable": true,
+      "tmp_noexec": true
+    },
+    "checks": [
+      {
+        "description": "assessment runs as a non-root user",
+        "passed": true,
+        "detail": "uid=10001"
+      },
+      {
+        "description": "root filesystem is read-only",
+        "passed": true
+      },
+      {
+        "description": "effective capabilities are empty",
+        "passed": true,
+        "detail": "CapEff=0000000000000000"
+      },
+      {
+        "description": "no-new-privileges is set",
+        "passed": true
+      },
+      {
+        "description": "no routable network access",
+        "passed": true,
+        "detail": "interfaces=bonding_masters,erspan0,gre0,gretap0,ip6_vti0,ip6gre0,ip6tnl0,ip_vti0,lo,sit0,tunl0; routable_v4=0;outbound_connect=blocked"
+      },
+      {
+        "description": "Docker socket is absent",
+        "passed": true
+      },
+      {
+        "description": "the mounted nulq binary executes",
+        "passed": true,
+        "detail": "/opt/nulq/nulq"
+      },
+      {
+        "description": "/tmp is writable and size-limited",
+        "passed": true
+      },
+      {
+        "description": "/tmp refuses execution",
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "summary": {
+    "passed": false,
+    "scenarios_total": 25,
+    "scenarios_passed": 20,
+    "scenarios_failed": 0,
+    "scenarios_unsupported": 5,
+    "expected_findings": 14,
+    "actual_findings": 96,
+    "missing_findings": 0,
+    "unexpected_findings": 0,
+    "severity_mismatches": 0,
+    "confidence_mismatches": 0,
+    "duplicate_findings": 0,
+    "dangling_evidence": 0,
+    "findings_without_evidence": 0,
+    "unaccounted_findings": 27,
+    "scans_validated": 5,
+    "scans_invalid": 0
+  },
+  "scans": [
+    {
+      "name": "app",
+      "artifact": "scan-app.json",
+      "report_id": "rpt-1c2588bd7a69",
+      "hostname": "8e17c9e19e08",
+      "os_id": "alpine",
+      "schema_version": "1.1",
+      "duration_ms": 4,
+      "findings": 11,
+      "observations": 90,
+      "schema_valid": true,
+      "coverage": {
+        "status": "complete",
+        "execution_complete": true,
+        "coverage_complete": true,
+        "files_examined": 4,
+        "directories_examined": 4,
+        "traversal_errors": 0,
+        "permission_denied": 0,
+        "unavailable_observations": 6,
+        "unsupported_observations": 0,
+        "truncated_roots": [],
+        "excluded_roots": [],
+        "skipped_rules": [
+          {
+            "rule_id": "NULQ-FS-001",
+            "reason": "missing observations: filesystem.file"
+          },
+          {
+            "rule_id": "NULQ-FS-002",
+            "reason": "missing observations: filesystem.file"
+          },
+          {
+            "rule_id": "NULQ-FS-004",
+            "reason": "missing observations: filesystem.file"
+          },
+          {
+            "rule_id": "NULQ-FS-005",
+            "reason": "missing observations: filesystem.file"
+          },
+          {
+            "rule_id": "NULQ-ID-002",
+            "reason": "missing observations: identity.sudo_rule"
+          },
+          {
+            "rule_id": "NULQ-SYS-005",
+            "reason": "missing observations: system.systemd_unit"
+          },
+          {
+            "rule_id": "NULQ-SYS-009",
+            "reason": "missing observations: system.sshd_config"
+          }
+        ],
+        "failed_operations": [],
+        "roots": [
+          {
+            "root": "/lab/fixtures/app",
+            "status": "complete",
+            "files_examined": 4,
+            "directories_examined": 4,
+            "traversal_errors": 0,
+            "permission_denied": 0,
+            "truncated": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "baseline",
+      "artifact": "scan.json",
+      "report_id": "rpt-140b754c19f5",
+      "hostname": "30f32f50d81c",
+      "os_id": "alpine",
+      "schema_version": "1.1",
+      "duration_ms": 19,
+      "findings": 27,
+      "observations": 107,
+      "schema_valid": true,
+      "coverage": {
+        "status": "partial",
+        "execution_complete": true,
+        "coverage_complete": false,
+        "files_examined": 112,
+        "directories_examined": 128,
+        "traversal_errors": 3,
+        "permission_denied": 3,
+        "unavailable_observations": 6,
+        "unsupported_observations": 0,
+        "truncated_roots": [],
+        "excluded_roots": [],
+        "skipped_rules": [
+          {
+            "rule_id": "NULQ-ID-002",
+            "reason": "missing observations: identity.sudo_rule"
+          },
+          {
+            "rule_id": "NULQ-SYS-005",
+            "reason": "missing observations: system.systemd_unit"
+          },
+          {
+            "rule_id": "NULQ-SYS-009",
+            "reason": "missing observations: system.sshd_config"
+          }
+        ],
+        "failed_operations": [],
+        "roots": [
+          {
+            "root": "/",
+            "status": "partial",
+            "files_examined": 112,
+            "directories_examined": 128,
+            "traversal_errors": 3,
+            "permission_denied": 3,
+            "truncated": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "fixtures",
+      "artifact": "scan-fixtures.json",
+      "report_id": "rpt-5f5c26918c5d",
+      "hostname": "de8c5bf5a525",
+      "os_id": "alpine",
+      "schema_version": "1.1",
+      "duration_ms": 7,
+      "findings": 27,
+      "observations": 106,
+      "schema_valid": true,
+      "coverage": {
+        "status": "partial",
+        "execution_complete": true,
+        "coverage_complete": false,
+        "files_examined": 18,
+        "directories_examined": 33,
+        "traversal_errors": 2,
+        "permission_denied": 2,
+        "unavailable_observations": 6,
+        "unsupported_observations": 0,
+        "truncated_roots": [],
+        "excluded_roots": [],
+        "skipped_rules": [
+          {
+            "rule_id": "NULQ-ID-002",
+            "reason": "missing observations: identity.sudo_rule"
+          },
+          {
+            "rule_id": "NULQ-SYS-005",
+            "reason": "missing observations: system.systemd_unit"
+          },
+          {
+            "rule_id": "NULQ-SYS-009",
+            "reason": "missing observations: system.sshd_config"
+          }
+        ],
+        "failed_operations": [],
+        "roots": [
+          {
+            "root": "/lab/fixtures",
+            "status": "partial",
+            "files_examined": 18,
+            "directories_examined": 33,
+            "traversal_errors": 2,
+            "permission_denied": 2,
+            "truncated": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "identity",
+      "artifact": "scan-identity.json",
+      "report_id": "rpt-6bfca678f67f",
+      "hostname": "42ac17820564",
+      "os_id": "alpine",
+      "schema_version": "1.1",
+      "duration_ms": 4,
+      "findings": 1,
+      "observations": 57,
+      "schema_valid": true,
+      "coverage": {
+        "status": "complete",
+        "execution_complete": true,
+        "coverage_complete": true,
+        "files_examined": 0,
+        "directories_examined": 0,
+        "traversal_errors": 0,
+        "permission_denied": 0,
+        "unavailable_observations": 6,
+        "unsupported_observations": 0,
+        "truncated_roots": [],
+        "excluded_roots": [],
+        "skipped_rules": [
+          {
+            "rule_id": "NULQ-ID-002",
+            "reason": "missing observations: identity.sudo_rule"
+          }
+        ],
+        "failed_operations": [],
+        "roots": []
+      }
+    },
+    {
+      "name": "path",
+      "artifact": "scan-path.json",
+      "report_id": "rpt-325f19ad8cd2",
+      "hostname": "8f0ecc4155b5",
+      "os_id": "alpine",
+      "schema_version": "1.1",
+      "duration_ms": 11,
+      "findings": 30,
+      "observations": 108,
+      "schema_valid": true,
+      "coverage": {
+        "status": "partial",
+        "execution_complete": true,
+        "coverage_complete": false,
+        "files_examined": 18,
+        "directories_examined": 33,
+        "traversal_errors": 2,
+        "permission_denied": 2,
+        "unavailable_observations": 6,
+        "unsupported_observations": 0,
+        "truncated_roots": [],
+        "excluded_roots": [],
+        "skipped_rules": [
+          {
+            "rule_id": "NULQ-ID-002",
+            "reason": "missing observations: identity.sudo_rule"
+          },
+          {
+            "rule_id": "NULQ-SYS-005",
+            "reason": "missing observations: system.systemd_unit"
+          },
+          {
+            "rule_id": "NULQ-SYS-009",
+            "reason": "missing observations: system.sshd_config"
+          }
+        ],
+        "failed_operations": [],
+        "roots": [
+          {
+            "root": "/lab/fixtures",
+            "status": "partial",
+            "files_examined": 18,
+            "directories_examined": 33,
+            "traversal_errors": 2,
+            "permission_denied": 2,
+            "truncated": false
+          }
+        ]
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "VT-FS-001",
+      "title": "World-writable directory without sticky bit detected",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-002 on /lab/fixtures/fs/world-writable severity MEDIUM",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        },
+        {
+          "description": "coverage status is partial",
+          "passed": true,
+          "detail": "partial"
+        },
+        {
+          "description": "coverage_complete matches",
+          "passed": true,
+          "detail": "false"
+        },
+        {
+          "description": "execution_complete matches",
+          "passed": true,
+          "detail": "true"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-002",
+      "title": "Sticky-bit world-writable directory is not itself escalated",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "no finding NULQ-FS-002 on /lab/fixtures/fs/world-writable-sticky",
+          "passed": true,
+          "detail": "no matching finding"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-003",
+      "title": "Root-owned SUID executable inventory",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-001 on /lab/fixtures/suid/root-owned-tool severity LOW",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-004",
+      "title": "SUID in world-writable directory escalates to HIGH",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-002 on /lab/fixtures/sgid/writable-dir severity HIGH",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-005",
+      "title": "Inert SUID without execute bit is INFO",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-001 on /lab/fixtures/suid/inert-suid severity INFO",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-006",
+      "title": "World-writable directory with root-owned executable",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-002 on /lab/fixtures/fs/world-writable-exec severity MEDIUM",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-007",
+      "title": "Writable parent directory ancestry",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-002 on /lab/fixtures/fs/writable-parent severity MEDIUM",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-008",
+      "title": "Unsafe directory ancestry attributed to directly writable directory",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-002 on /lab/fixtures/fs/ancestry/middle/leaf severity MEDIUM",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-009",
+      "title": "Sticky-bit owned-by-user edge case",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-002 on /lab/fixtures/fs/sticky-owned severity HIGH",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-010",
+      "title": "Clean directory negative control",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "no finding NULQ-FS-002 on /lab/fixtures/fs/clean",
+          "passed": true,
+          "detail": "no matching finding"
+        }
+      ]
+    },
+    {
+      "id": "VT-FS-011",
+      "title": "Unreadable subtree reported as partial coverage",
+      "category": "coverage",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "permission_denied accounted for",
+          "passed": true,
+          "detail": "2"
+        }
+      ]
+    },
+    {
+      "id": "VT-PATH-001",
+      "title": "Writable PATH directory detected as LOW",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "scan": "path",
+      "supported": true,
+      "status": "passed",
+      "findings": 30,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-003 on /lab/fixtures/path/writable severity LOW",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-PATH-002",
+      "title": "Late-writable PATH entry is LOW not HIGH",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "scan": "path",
+      "supported": true,
+      "status": "passed",
+      "findings": 30,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-003 on /lab/fixtures/path/late-writable severity LOW",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-PATH-003",
+      "title": "Symlink PATH entry resolved to safe target",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "scan": "path",
+      "supported": true,
+      "status": "passed",
+      "findings": 30,
+      "checks": [
+        {
+          "description": "no finding NULQ-FS-003 on /lab/fixtures/links/path-link",
+          "passed": true,
+          "detail": "no matching finding"
+        }
+      ]
+    },
+    {
+      "id": "VT-PATH-004",
+      "title": "Empty PATH entry detected",
+      "category": "path-hijack",
+      "environment": "synthetic",
+      "scan": "path",
+      "supported": true,
+      "status": "passed",
+      "findings": 30,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-003 on \u003cPATH index 1: empty\u003e severity LOW",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-ID-001",
+      "title": "Wheel supplementary group membership",
+      "category": "identity",
+      "environment": "live",
+      "scan": "identity",
+      "supported": true,
+      "status": "passed",
+      "findings": 1,
+      "checks": [
+        {
+          "description": "finding NULQ-ID-001 on any resource severity LOW",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        },
+        {
+          "description": "scan.unprivileged matches",
+          "passed": true,
+          "detail": "true"
+        }
+      ]
+    },
+    {
+      "id": "VT-SGID-001",
+      "title": "SGID executable inventory",
+      "category": "filesystem",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-001 on /lab/fixtures/sgid/sgid-tool severity LOW",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-APP-001",
+      "title": "Non-privileged executable with wrong ownership is not flagged",
+      "category": "application",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "no finding NULQ-FS-001 on /lab/fixtures/app/tool",
+          "passed": true,
+          "detail": "no matching finding"
+        }
+      ]
+    },
+    {
+      "id": "VT-APP-002",
+      "title": "Writable application configuration directory",
+      "category": "application",
+      "environment": "synthetic",
+      "scan": "fixtures",
+      "supported": true,
+      "status": "passed",
+      "findings": 27,
+      "checks": [
+        {
+          "description": "finding NULQ-FS-002 on /lab/fixtures/app/config/writable severity MEDIUM",
+          "passed": true,
+          "detail": "matched 1, expected 1..1"
+        }
+      ]
+    },
+    {
+      "id": "VT-APP-003",
+      "title": "App scan kernel findings accounted",
+      "category": "application",
+      "environment": "synthetic",
+      "scan": "app",
+      "supported": true,
+      "status": "passed",
+      "findings": 11,
+      "checks": [
+        {
+          "description": "coverage status is complete",
+          "passed": true,
+          "detail": "complete"
+        },
+        {
+          "description": "coverage_complete matches",
+          "passed": true,
+          "detail": "true"
+        },
+        {
+          "description": "execution_complete matches",
+          "passed": true,
+          "detail": "true"
+        }
+      ]
+    },
+    {
+      "id": "VT-CAP-001",
+      "title": "File capability metadata unsupported in lab",
+      "category": "capabilities",
+      "environment": "unsupported",
+      "supported": false,
+      "status": "unsupported",
+      "reason": "Setting real security.capability xattrs on fixture binaries requires capabilities not available in the read-only laboratory image.",
+      "findings": 0,
+      "checks": []
+    },
+    {
+      "id": "VT-SUDO-001",
+      "title": "Sudoers policy parsing unsupported in lab",
+      "category": "sudo",
+      "environment": "unsupported",
+      "supported": false,
+      "status": "unsupported",
+      "reason": "The sudo collector reads /etc/sudoers from the live system, not from --root fixtures.",
+      "findings": 0,
+      "checks": []
+    },
+    {
+      "id": "VT-CRON-001",
+      "title": "Cron job inventory unsupported in lab",
+      "category": "cron",
+      "environment": "unsupported",
+      "supported": false,
+      "status": "unsupported",
+      "reason": "The cron collector reads system cron directories from the live system, not from --root fixtures.",
+      "findings": 0,
+      "checks": []
+    },
+    {
+      "id": "VT-SYSTEMD-001",
+      "title": "systemd unit analysis unsupported in lab",
+      "category": "systemd",
+      "environment": "unsupported",
+      "supported": false,
+      "status": "unsupported",
+      "reason": "Alpine does not run systemd; no service is started or stopped.",
+      "findings": 0,
+      "checks": []
+    },
+    {
+      "id": "VT-CONTAINER-001",
+      "title": "Container runtime configuration unsupported in lab",
+      "category": "container",
+      "environment": "unsupported",
+      "supported": false,
+      "status": "unsupported",
+      "reason": "Deeper container runtime configuration analysis is scheduled for M4; no container escape is attempted.",
+      "findings": 0,
+      "checks": []
+    }
+  ],
+  "findings": {
+    "total": 96,
+    "by_rule": [
+      {
+        "rule_id": "NULQ-FS-001",
+        "count": 10
+      },
+      {
+        "rule_id": "NULQ-FS-002",
+        "count": 22
+      },
+      {
+        "rule_id": "NULQ-FS-003",
+        "count": 3
+      },
+      {
+        "rule_id": "NULQ-ID-001",
+        "count": 1
+      },
+      {
+        "rule_id": "NULQ-SYS-001",
+        "count": 15
+      },
+      {
+        "rule_id": "NULQ-SYS-006",
+        "count": 3
+      },
+      {
+        "rule_id": "NULQ-SYS-007",
+        "count": 12
+      },
+      {
+        "rule_id": "NULQ-SYS-008",
+        "count": 3
+      }
+    ],
+    "missing": [],
+    "unexpected": [],
+    "unaccounted": [
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/fs/sticky-owned",
+        "severity": "HIGH"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/sgid/writable-dir",
+        "severity": "HIGH"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/app/config/writable",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/fs/ancestry/middle",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/fs/ancestry/middle/leaf",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/fs/group-writable-exec",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/fs/world-writable",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/fs/world-writable-exec",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/fs/writable-parent",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/path/late-writable",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-002",
+        "resource": "/lab/fixtures/path/writable",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-007",
+        "resource": "spectre_v2",
+        "severity": "MEDIUM"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-001",
+        "resource": "/lab/fixtures/fs/sticky-owned/tool",
+        "severity": "LOW"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-001",
+        "resource": "/lab/fixtures/sgid/sgid-tool",
+        "severity": "LOW"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-001",
+        "resource": "/lab/fixtures/sgid/writable-dir/suid-tool",
+        "severity": "LOW"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-001",
+        "resource": "/lab/fixtures/suid/root-owned-tool",
+        "severity": "LOW"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-001",
+        "resource": "kernel.kptr_restrict",
+        "severity": "LOW"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-001",
+        "resource": "kernel.unprivileged_bpf_disabled",
+        "severity": "LOW"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-FS-001",
+        "resource": "/lab/fixtures/suid/inert-suid",
+        "severity": "INFO"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-001",
+        "resource": "fs.protected_fifos",
+        "severity": "INFO"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-001",
+        "resource": "fs.protected_regular",
+        "severity": "INFO"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-001",
+        "resource": "kernel.unprivileged_userns_clone",
+        "severity": "INFO"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-006",
+        "resource": "kernel.unprivileged_userns_clone",
+        "severity": "INFO"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-007",
+        "resource": "indirect_target_selection",
+        "severity": "INFO"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-007",
+        "resource": "spec_store_bypass",
+        "severity": "INFO"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-007",
+        "resource": "spectre_v1",
+        "severity": "INFO"
+      },
+      {
+        "scenario": "unaccounted:baseline",
+        "rule_id": "NULQ-SYS-008",
+        "resource": "/.dockerenv",
+        "severity": "INFO"
+      }
+    ],
+    "duplicates": [],
+    "severity_mismatches": [],
+    "confidence_mismatches": []
+  },
+  "coverage": [
+    {
+      "scan": "app",
+      "status": "complete",
+      "execution_complete": true,
+      "coverage_complete": true,
+      "files_examined": 4,
+      "directories_examined": 4,
+      "traversal_errors": 0,
+      "permission_denied": 0,
+      "truncated_roots": [],
+      "excluded_roots": [],
+      "failed_operations": []
+    },
+    {
+      "scan": "baseline",
+      "status": "partial",
+      "execution_complete": true,
+      "coverage_complete": false,
+      "files_examined": 112,
+      "directories_examined": 128,
+      "traversal_errors": 3,
+      "permission_denied": 3,
+      "truncated_roots": [],
+      "excluded_roots": [],
+      "failed_operations": []
+    },
+    {
+      "scan": "fixtures",
+      "status": "partial",
+      "execution_complete": true,
+      "coverage_complete": false,
+      "files_examined": 18,
+      "directories_examined": 33,
+      "traversal_errors": 2,
+      "permission_denied": 2,
+      "truncated_roots": [],
+      "excluded_roots": [],
+      "failed_operations": []
+    },
+    {
+      "scan": "identity",
+      "status": "complete",
+      "execution_complete": true,
+      "coverage_complete": true,
+      "files_examined": 0,
+      "directories_examined": 0,
+      "traversal_errors": 0,
+      "permission_denied": 0,
+      "truncated_roots": [],
+      "excluded_roots": [],
+      "failed_operations": []
+    },
+    {
+      "scan": "path",
+      "status": "partial",
+      "execution_complete": true,
+      "coverage_complete": false,
+      "files_examined": 18,
+      "directories_examined": 33,
+      "traversal_errors": 2,
+      "permission_denied": 2,
+      "truncated_roots": [],
+      "excluded_roots": [],
+      "failed_operations": []
+    }
+  ],
+  "collection_errors": [
+    "baseline: 3 entries under / could not be traversed (3 permission denied)",
+    "fixtures: 2 entries under /lab/fixtures could not be traversed (2 permission denied)",
+    "path: 2 entries under /lab/fixtures could not be traversed (2 permission denied)"
+  ],
+  "limitations": [
+    "Fixture scans (--root /lab/fixtures) assess synthetic objects created at image build time; they are not live operating-system observations.",
+    "Baseline scans mount an empty tmpfs over /lab/fixtures, so fixture findings can never appear as live Alpine observations.",
+    "Alpine/BusyBox cannot represent systemd, PAM, SELinux or distribution package layout; those scenarios are reported as unsupported.",
+    "The container shares the Docker host kernel; sysctl observations describe that kernel, not bare metal.",
+    "Container isolation is proven by inspection and in-container checks, not by kernel auditing."
+  ]
+}
