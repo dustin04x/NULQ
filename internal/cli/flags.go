@@ -39,10 +39,10 @@ func splitCSV(value string) []string {
 
 func validateFormat(value string) error {
 	switch value {
-	case "terminal", "json", "jsonl", "markdown":
+	case "terminal", "json", "jsonl", "markdown", "sarif":
 		return nil
 	}
-	return fmt.Errorf("unknown format %q (expected terminal, json, jsonl or markdown)", value)
+	return fmt.Errorf("unknown format %q (expected terminal, json, jsonl, markdown or sarif)", value)
 }
 
 func validateColor(value string) error {
@@ -132,6 +132,8 @@ func renderScanReport(w io.Writer, report models.Report, format string, opts ren
 		return reporting.JSONL(w, report)
 	case "markdown":
 		return reporting.Markdown(w, report)
+	case "sarif":
+		return reporting.RenderSARIF(w, report)
 	default:
 		return reporting.Terminal(w, report, reporting.TerminalOptions{
 			Color: opts.Color,
