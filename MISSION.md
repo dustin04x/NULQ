@@ -13,9 +13,9 @@ NULQ is a working v0.1.0 foundation:
   `linux.filesystem`, `linux.process`, `linux.sudo`, `linux.cron`,
   `linux.container`, `linux.systemd` and `linux.sshd` collectors.
 - Twenty registered rules across identity, filesystem, process, system
-  and SSH domains: `NULQ-ID-001` through `NULQ-ID-006`, `NULQ-FS-001`
-  through `NULQ-FS-005`, `NULQ-PROC-001`, `NULQ-SYS-001` through
-  `NULQ-SYS-009`.
+  and SSH domains: `NULQ-ID-001` through `NULQ-ID-004`, `NULQ-ID-006`,
+  `NULQ-FS-001` through `NULQ-FS-005`, `NULQ-PROC-001`, `NULQ-SYS-001`
+  through `NULQ-SYS-009`. Rule ID `NULQ-ID-005` is not registered in v0.1.0.
 - Bounded-concurrency engine with per-collector and per-rule timeouts, panic
   isolation, prerequisite skipping and output validation.
 - Terminal, JSON, JSONL and Markdown reporting; JSON Schema 1.1; stable exit
@@ -25,10 +25,10 @@ NULQ is a working v0.1.0 foundation:
 - M1.5 independent audit documented in `docs/audits/m1.5-baseline.md` and
   `docs/audits/m1.5-final-engineering-report.md`; severity semantics in
   `docs/architecture/severity-confidence-model.md`.
-- Committed and pushed to `origin/master`; no release tag yet.
+- Committed and pushed to `origin/master`; release tag `v0.1.0` exists.
 
 Known unimplemented areas, deliberately out of scope here: stored-report
-queries and SARIF export (M6), release signing (M7).
+queries (M6), release signing (M7).
 
 ## Objective
 

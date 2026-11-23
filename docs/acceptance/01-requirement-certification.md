@@ -52,7 +52,7 @@ is certified on the basis of a file existing alone.
 | Item | Reason |
 |------|--------|
 | M6 stored-report queries (`findings list`, `report`) | Not implemented; listed as remaining in ROADMAP.md M6 |
-| M6 SARIF export | Not implemented; listed as remaining in ROADMAP.md M6 |
+| M6 SARIF export | Implemented and tested (`scan --format sarif`, `report export --format sarif`) |
 | M7 signed release artifacts | Not implemented; listed as remaining in ROADMAP.md M7 |
 | M4 group-mapping risks, namespace inventory | Planned, not implemented (ROADMAP.md M4) |
 

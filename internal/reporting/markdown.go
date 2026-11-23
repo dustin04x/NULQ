@@ -51,7 +51,7 @@ func Markdown(w io.Writer, rep models.Report) error {
 
 	for index, finding := range rep.Findings {
 		fmt.Fprintf(&b, "### %d. [%s] %s\n\n", index+1, finding.Severity, markdownSafe(finding.Title))
-		fmt.Fprintf(&b, "- **Rule:** `%s` version `%s`\n", finding.RuleID, finding.RuleVersion)
+		fmt.Fprintf(&b, "- **Rule:** `%s` version `%s`\n", markdownSafe(finding.RuleID), markdownSafe(finding.RuleVersion))
 		fmt.Fprintf(&b, "- **Confidence:** %s\n", finding.Confidence)
 		fmt.Fprintf(&b, "- **Resource:** `%s` (%s)\n", markdownSafe(finding.Resource), markdownSafe(finding.ResourceKind))
 		fmt.Fprintf(&b, "- **Category:** %s\n", markdownSafe(finding.Category))
@@ -74,7 +74,7 @@ func Markdown(w io.Writer, rep models.Report) error {
 					field = "resource"
 				}
 				fmt.Fprintf(&b, "| `%s` | `%s` | `%s` | `%s` |\n",
-					item.ID, markdownSafe(item.Resource), markdownSafe(field), markdownSafe(item.ObservedValue))
+					markdownSafe(item.ID), markdownSafe(item.Resource), markdownSafe(field), markdownSafe(item.ObservedValue))
 			}
 			b.WriteString("\n")
 		}

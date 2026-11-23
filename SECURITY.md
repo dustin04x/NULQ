@@ -91,9 +91,10 @@ corresponding rules exist, and are never presented as live observations.
 - NULQ does not detect TOCTOU races between collection and a finding's use. It
   performs no privileged action based on collected data, so the practical
   impact is limited to report accuracy.
-- `sudo` policy, capabilities, systemd and cron analysis are not implemented in
-  v0.1.0. Do not treat a clean NULQ report as a complete privilege-escalation
-  assessment.
+- `sudo` policy, capabilities, systemd and cron rules are implemented and
+  unit-tested but lack Alpine laboratory fixtures, so they appear as
+  unsupported lab scenarios. Do not treat a clean NULQ report as a complete
+  privilege-escalation assessment for those domains on this target.
 - The JSON schema and `pkg/api` accept unknown fields for forward
   compatibility; consumers must validate the `schema_version` they rely on.
 

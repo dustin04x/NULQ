@@ -178,8 +178,9 @@ Already delivered: JSON Schema v1, JSONL, Markdown, stable IDs, exit codes,
 `pkg/api`, shell/Python examples.
 
 Remaining: stored-report queries (`findings list`, `report`), severity
-baselines and diffing between scans, SARIF export evaluation, integration test
-fixtures packaged for consumers.
+baselines and diffing between scans, integration test fixtures packaged for
+consumers. SARIF export is implemented (`scan --format sarif`,
+`report export --format sarif`) and tested.
 
 ## M7 — Hardening and release — **in progress**
 

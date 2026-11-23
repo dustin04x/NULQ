@@ -13,6 +13,7 @@ import (
 	"github.com/dustin04x/nulq/internal/core/models"
 	"github.com/dustin04x/nulq/internal/platform/linux/filesystem"
 	"github.com/dustin04x/nulq/internal/rules"
+	"github.com/dustin04x/nulq/internal/storage"
 )
 
 func (a *App) runScan(ctx context.Context, args []string) int {
@@ -36,6 +37,8 @@ func (a *App) runScan(ctx context.Context, args []string) int {
 	quiet := flags.Bool("quiet", false, "suppress informational output and findings below MEDIUM")
 	verbose := flags.Bool("verbose", false, "emit diagnostic logging to stderr")
 	flags.Var(&roots, "root", "restrict filesystem discovery to this root (repeatable)")
+	save := flags.Bool("save", true, "persist the report to local storage")
+	dataDir := flags.String("data-dir", "", "override report storage directory")
 
 	if err := flags.Parse(args); err != nil {
 		if stderrors.Is(err, flag.ErrHelp) {
@@ -135,6 +138,15 @@ func (a *App) runScan(ctx context.Context, args []string) int {
 	if scanErr != nil {
 		fmt.Fprintf(a.Stderr, "nulq scan: %v\n", scanErr)
 		return ExitError
+	}
+
+	if *save {
+		store := storage.New(*dataDir)
+		if err := store.SaveReport(report); err != nil {
+			fmt.Fprintf(a.Stderr, "nulq scan: saving report: %v\n", err)
+		} else if !*quiet {
+			fmt.Fprintf(a.Stderr, "nulq: saved report %s\n", report.Scan.ReportID)
+		}
 	}
 	if failSeverity.Valid() && report.MaxSeverity().AtLeast(failSeverity) {
 		return ExitFindings

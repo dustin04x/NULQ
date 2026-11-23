@@ -7,6 +7,13 @@ import "strings"
 // assessed system passes through these helpers before it reaches a terminal
 // or a Markdown document.
 
+// SanitizeLine removes C0 and C1 control characters and folds newlines and
+// tabs into spaces. It is the exported counterpart of singleLine for callers
+// outside this package that must render a value originating outside the process
+// (for example a field read back from a stored report) without allowing
+// terminal escape injection. See AGENTS.md §2.8 and §13.
+func SanitizeLine(value string) string { return singleLine(value) }
+
 // singleLine removes C0 and C1 control characters, folding newlines and tabs
 // into spaces.
 func singleLine(value string) string {

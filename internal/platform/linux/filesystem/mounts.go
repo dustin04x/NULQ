@@ -84,6 +84,9 @@ func ReadMountInfo(path string) ([]Mount, []error, error) {
 // ParseMountInfo parses mountinfo bytes. Fields are escaped by proc(5) as
 // octal sequences, so splitting on spaces is safe before unescaping.
 func ParseMountInfo(data []byte) ([]Mount, []error) {
+	if len(data) > 4*1024*1024 {
+		return nil, []error{fmt.Errorf("mountinfo too large: %d bytes", len(data))}
+	}
 	var mounts []Mount
 	var parseErrors []error
 	scanner := bufio.NewScanner(strings.NewReader(string(data)))

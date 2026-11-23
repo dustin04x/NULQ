@@ -118,6 +118,14 @@ func (c *Collector) Collect(ctx context.Context) ([]models.Observation, error) {
 		contextObs.Set(key, value)
 	}
 
+	// environment capability assessment
+	procAvailable := false
+	if _, err := os.Stat(c.procRoot); err == nil {
+		procAvailable = true
+	}
+	contextObs.Set(models.AttrEnvProcAvailable, strconv.FormatBool(procAvailable))
+	contextObs.Set(models.AttrEnvRoot, strconv.FormatBool(os.Geteuid() == 0))
+
 	observations := make([]models.Observation, 0, 1+len(memberships))
 	observations = append(observations, contextObs)
 	observations = append(observations, memberships...)
@@ -136,6 +144,44 @@ func (c *Collector) SetPasswdPath(path string) { c.passwdPath = path }
 // userAccounts reads /etc/passwd and emits one observation per account.
 // Password hashes are never recorded: only the password status field (x, !,
 // locked or present) is captured.
+// parsePasswdLine parses a single /etc/passwd line into an observation.
+// Returns nil observation for blank/comment lines. Returns an error for malformed lines.
+func parsePasswdLine(line string, now time.Time, collector string) (models.Observation, error) {
+	line = strings.TrimSpace(line)
+	if line == "" || strings.HasPrefix(line, "#") {
+		return models.Observation{}, nil
+	}
+	if len(line) > 4096 {
+		return models.Observation{}, fmt.Errorf("passwd line too long: %d", len(line))
+	}
+	fields := strings.Split(line, ":")
+	if len(fields) < 7 {
+		return models.Observation{}, fmt.Errorf("too few fields: %d", len(fields))
+	}
+	name := fields[0]
+	if name == "" {
+		return models.Observation{}, fmt.Errorf("empty username")
+	}
+	uid, err := strconv.Atoi(fields[2])
+	if err != nil || uid < 0 {
+		return models.Observation{}, fmt.Errorf("invalid uid %q", fields[2])
+	}
+	gid, err := strconv.Atoi(fields[3])
+	if err != nil || gid < 0 {
+		return models.Observation{}, fmt.Errorf("invalid gid %q", fields[3])
+	}
+	obs := models.NewObservation(models.KindUserAccount, name, collector, now, nil)
+	obs.Set(models.AttrUserName, name)
+	obs.Set(models.AttrUserPasswordStatus, fields[1])
+	obs.Set(models.AttrUserUID, strconv.Itoa(uid))
+	obs.Set(models.AttrUserGID, strconv.Itoa(gid))
+	obs.Set(models.AttrUserShell, fields[6])
+	if len(fields) > 5 {
+		obs.Set(models.AttrUserHome, fields[5])
+	}
+	return obs, nil
+}
+
 func (c *Collector) userAccounts(now time.Time) ([]models.Observation, error) {
 	file, err := os.Open(c.passwdPath)
 	if err != nil {
@@ -147,22 +193,13 @@ func (c *Collector) userAccounts(now time.Time) ([]models.Observation, error) {
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
+		obs, err := parsePasswdLine(scanner.Text(), now, collectorName)
+		if err != nil {
 			continue
 		}
-		fields := strings.Split(line, ":")
-		if len(fields) < 7 {
+		if obs.ID == "" && obs.Kind == "" {
+			// blank/comment
 			continue
-		}
-		obs := models.NewObservation(models.KindUserAccount, fields[0], collectorName, now, nil)
-		obs.Set(models.AttrUserName, fields[0])
-		obs.Set(models.AttrUserPasswordStatus, fields[1])
-		obs.Set(models.AttrUserUID, fields[2])
-		obs.Set(models.AttrUserGID, fields[3])
-		obs.Set(models.AttrUserShell, fields[6])
-		if len(fields) > 5 {
-			obs.Set(models.AttrUserHome, fields[5])
 		}
 		observations = append(observations, obs)
 	}
@@ -230,4 +267,80 @@ func sortInts(values []int) {
 			values[j], values[j-1] = values[j-1], values[j]
 		}
 	}
+}
+
+// parseGroupLine parses a single /etc/group line.
+// Returns nil observation for blank/comment lines.
+func parseGroupLine(line string, now time.Time, collector string) (models.Observation, error) {
+	line = strings.TrimSpace(line)
+	if line == "" || strings.HasPrefix(line, "#") {
+		return models.Observation{}, nil
+	}
+	if len(line) > 4096 {
+		return models.Observation{}, fmt.Errorf("group line too long: %d", len(line))
+	}
+	fields := strings.Split(line, ":")
+	if len(fields) < 3 {
+		return models.Observation{}, fmt.Errorf("too few fields: %d", len(fields))
+	}
+	name := fields[0]
+	if name == "" {
+		return models.Observation{}, fmt.Errorf("empty group name")
+	}
+	gid, err := strconv.Atoi(fields[2])
+	if err != nil || gid < 0 {
+		return models.Observation{}, fmt.Errorf("invalid gid %q", fields[2])
+	}
+	obs := models.NewObservation(models.KindGroupMembership, name, collector, now, nil)
+	obs.Set(models.AttrGroupName, name)
+	obs.Set(models.AttrGroupGID, strconv.Itoa(gid))
+	if len(fields) >= 4 {
+		obs.Set("group_members", fields[3])
+	}
+	return obs, nil
+}
+
+// ProcessNamespace captures namespace identifiers for one visible process.
+type ProcessNamespace struct {
+	PID   int
+	Links map[string]string
+}
+
+// CollectProcessNamespaces enumerates visible processes under procRoot and
+// reads their namespace links. Processes that disappear or are unreadable are
+// skipped without error.
+func CollectProcessNamespaces(procRoot string) []ProcessNamespace {
+	entries, err := os.ReadDir(procRoot)
+	if err != nil {
+		return nil
+	}
+	var out []ProcessNamespace
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		pid, err := strconv.Atoi(e.Name())
+		if err != nil {
+			continue
+		}
+		links := map[string]string{}
+		for _, ns := range []string{"mnt", "pid", "net", "user", "ipc", "uts", "cgroup"} {
+			target, err := os.Readlink(procRoot + "/" + e.Name() + "/ns/" + ns)
+			if err != nil {
+				continue
+			}
+			links[ns] = target
+		}
+		if len(links) == 0 {
+			continue
+		}
+		out = append(out, ProcessNamespace{PID: pid, Links: links})
+	}
+	// deterministic order by pid
+	for i := 1; i < len(out); i++ {
+		for j := i; j > 0 && out[j].PID < out[j-1].PID; j-- {
+			out[j], out[j-1] = out[j-1], out[j]
+		}
+	}
+	return out
 }

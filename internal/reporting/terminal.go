@@ -79,6 +79,10 @@ func severityColor(severity models.Severity) string {
 
 // Terminal renders a full scan report for a human reader.
 func Terminal(w io.Writer, rep models.Report, opts TerminalOptions) error {
+	// Normalize so findings are emitted in a deterministic order regardless of
+	// the order they appear in the persisted or in-memory report, matching the
+	// JSON, JSONL and Markdown renderers.
+	rep.Normalize()
 	p := newPrinter(w, opts)
 	p.renderReport(rep, opts)
 	return p.out.Flush()
@@ -96,7 +100,7 @@ func (p *printer) renderReport(rep models.Report, opts TerminalOptions) {
 		p.printf("Host      %s\n", singleLine(hostSummary(rep.Host)))
 		p.printf("Session   %s\n", singleLine(sessionSummary(rep.Scan)))
 		p.printf("Scan      %s · %d rules · %d observations · %s\n",
-			rep.Scan.ReportID, rep.Stats.Rules.Total, rep.Stats.Observations, formatDuration(rep.Scan.DurationMS))
+			singleLine(rep.Scan.ReportID), rep.Stats.Rules.Total, rep.Stats.Observations, formatDuration(rep.Scan.DurationMS))
 		if rep.Scan.Partial {
 			p.printf("Coverage  %s\n", p.paint(ansiYellow, "partial: some sources were unavailable, failed or truncated"))
 		}
@@ -158,10 +162,10 @@ func (p *printer) renderReport(rep models.Report, opts TerminalOptions) {
 }
 
 func (p *printer) renderFinding(finding models.Finding, evidenceByID map[string]models.Evidence) {
-	p.printf("%s %s  %s\n", p.severityLabel(finding.Severity), finding.RuleID, singleLine(finding.Title))
+	p.printf("%s %s  %s\n", p.severityLabel(finding.Severity), singleLine(finding.RuleID), singleLine(finding.Title))
 	p.printf("         %s %s (%s)\n", p.paint(ansiDim, "Resource:"), singleLine(finding.Resource), singleLine(finding.ResourceKind))
 	p.printf("         %s %s · rule %s v%s\n",
-		p.paint(ansiDim, "Confidence:"), finding.Confidence, finding.RuleID, finding.RuleVersion)
+		p.paint(ansiDim, "Confidence:"), singleLine(string(finding.Confidence)), singleLine(finding.RuleID), singleLine(finding.RuleVersion))
 	p.writeParagraph("Why", finding.Explanation)
 	p.writeParagraph("Impact", finding.Impact)
 	p.writeParagraph("Remediation", finding.Remediation)
@@ -177,7 +181,7 @@ func (p *printer) renderFinding(finding models.Finding, evidenceByID map[string]
 				field = "resource"
 			}
 			p.printf("           - %s %s=%s [%s]\n",
-				singleLine(item.Resource), singleLine(field), singleLine(item.ObservedValue), item.ID)
+				singleLine(item.Resource), singleLine(field), singleLine(item.ObservedValue), singleLine(item.ID))
 		}
 	}
 	if len(finding.Limitations) > 0 {

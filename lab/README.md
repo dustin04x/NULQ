@@ -55,7 +55,7 @@ scripts stop and say so; they never install or reconfigure Docker.
 
 Alpine 3.22.8 (base digest `sha256:49340b34…`), NULQ `0.1.0-dev`:
 
-- 32/32 supported scenarios passed; 5 unsupported (capabilities, sudo, systemd,
+- 34/34 supported scenarios passed; 5 unsupported (capabilities, sudo, systemd,
   cron, container runtime) reported as unsupported, not as passes;
 - 5/5 reports valid against the published schema, cross-checked with Python
   `jsonschema`;
@@ -66,7 +66,7 @@ Alpine 3.22.8 (base digest `sha256:49340b34…`), NULQ `0.1.0-dev`:
   evidence, 0 findings without evidence, 0 severity/confidence mismatches;
 - built image 27,660,248 bytes (≈26.4 MiB), including real ELF SUID fixtures,
   owner/sticky variants and the inert non-executable SUID negative control;
-- the manifest contains 37 scenarios: 32 supported and 5 explicitly
+- the manifest contains 39 scenarios: 34 supported and 5 explicitly
   unsupported.
 
 ## Layout

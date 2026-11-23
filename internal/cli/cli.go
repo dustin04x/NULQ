@@ -63,6 +63,10 @@ func (a *App) Run(ctx context.Context, args []string) int {
 		return a.runSystem(ctx, args[1:])
 	case "rules":
 		return a.runRules(args[1:])
+	case "report":
+		return a.runReport(ctx, args[1:])
+	case "baseline":
+		return a.runBaseline(args[1:])
 	default:
 		fmt.Fprintf(a.Stderr, "nulq: unknown command %q\n\n", args[0])
 		a.printUsage(a.Stderr)

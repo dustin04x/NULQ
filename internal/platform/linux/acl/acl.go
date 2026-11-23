@@ -148,6 +148,9 @@ func PermText(perm uint16) string {
 // size, version, tag order, required entries, numeric IDs, permission bits and
 // the mask requirement for named entries.
 func Parse(data []byte) (ACL, error) {
+	if len(data) > 64*1024 {
+		return ACL{}, fmt.Errorf("ACL payload too large: %d bytes", len(data))
+	}
 	if len(data) < 4 {
 		return ACL{}, fmt.Errorf("ACL is shorter than its version header")
 	}

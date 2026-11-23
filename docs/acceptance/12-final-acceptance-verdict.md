@@ -53,7 +53,7 @@ gates passing.
 
 ## Remaining limitations (documented, not defects)
 
-- M6 stored-report queries and SARIF export: not implemented
+- M6 stored-report queries: not implemented; SARIF export: implemented and tested (`scan --format sarif`, `report export --format sarif`)
 - M7 signed release artifacts and performance budget regression tests: not implemented
 - M4 group-mapping risks and namespace inventory: planned, not implemented
 - No formal performance budget regression tests yet
