@@ -100,10 +100,12 @@ Three different things appear in a run, and the reports keep them separate:
    collectors; this is not a mocked observation, but it is also not a
    distribution's package state. `scan-fixtures.json` and `scan-path.json`
    cover these.
-3. **Unsupported checks** — sudo, capabilities, systemd, cron and container
-   runtime fixtures exist as plain files for planned parsers (M3/M4). No rule
-   reads them, so their scenarios are reported as `UNSUPPORTED`, never as
-   passed.
+3. **Unsupported checks** — capability, sudo, systemd, cron and container
+   runtime scenarios are reported as `UNSUPPORTED`, never as passed. The
+   corresponding collectors and rules exist, but the collectors read live
+   system paths or need privileges unavailable in the read-only container, and
+   deeper container-runtime analysis is not implemented. The fixture files do
+   not make these scenarios live observations.
 
 ## Security model
 

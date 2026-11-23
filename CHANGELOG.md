@@ -3,9 +3,10 @@
 All notable changes to NULQ are documented here. The format follows Keep a
 Changelog; versions follow Semantic Versioning.
 
-## [Unreleased]
+## [0.1.0-dev] — unreleased development line
 
-## [0.1.0] - 2026-11-22
+No tag or published artifact exists for this development line; `nulq version`
+reports `0.1.0-dev`.
 
 ### Added
 

@@ -34,9 +34,9 @@ tool, or a remote-control service.
 
 Run `nulq rules list --format json` for full rule metadata.
 
-> Rule ID `NULQ-ID-005` is not registered in v0.1.0; the identity sequence is not
-> contiguous. Do not interpret a gap in IDs as an unimplemented check within a
-> contiguous range.
+> Rule ID `NULQ-ID-005` is not registered in `0.1.0-dev`; the identity sequence
+> is not contiguous. Do not interpret a gap in IDs as an unimplemented check
+> within a contiguous range.
 
 ---
 
@@ -211,10 +211,15 @@ directory; persisted reports are treated as untrusted input on load.
 
 Known limitations:
 
-- ACLs and MAC policy are not evaluated; findings use mode bits only.
-- `sudo`, capabilities, systemd, and cron rules are implemented and unit-tested
-  but lack Alpine laboratory fixtures, so they appear as unsupported lab
-  scenarios on the Alpine target.
+- POSIX ACLs are evaluated for effective read/write/execute decisions in
+  replaceability checks when normalized ACL state is readable. Unreadable or
+  malformed ACLs are treated as unknown and never fall back to an unsafe
+  mode-bit claim. MAC policy is reported as module presence/enforcement only
+  (`NULQ-SYS-002`), not as a full policy audit.
+- `sudo`, capabilities, and cron rules are implemented and unit-tested; the
+  systemd rule and collector are implemented but lack dedicated unit tests.
+  None of these domains is exercised against a live Alpine target, so they
+  appear as unsupported lab scenarios on that target.
 - Docker is a prerequisite for the laboratory and is not installed by this
   project.
 - The laboratory runs on a pinned Alpine container; it cannot represent
@@ -233,8 +238,10 @@ JSON schema, and evaluates the scenario manifest:
 - 5/5 reports schema-valid
 
 The 5 unsupported scenarios are capabilities, sudo, systemd, cron, and
-container runtime — fixtures exist for planned parsers but are not exercised
-against live Alpine targets.
+container runtime. Their rules are implemented, but the Alpine laboratory
+cannot exercise them: the collectors read live system paths or need privileges
+unavailable in the read-only container, and deeper container-runtime analysis
+is not implemented. Unsupported is reported explicitly, never as a pass.
 
 ---
 

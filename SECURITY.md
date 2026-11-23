@@ -4,7 +4,7 @@
 
 | Version | Supported |
 |---|---|
-| 0.1.x (development) | Yes, security fixes are applied |
+| `0.1.0-dev` (development) | Yes, security fixes are applied |
 | Older | No |
 
 NULQ is pre-1.0; interfaces may change, but report schema version 1.1 is a
@@ -81,20 +81,25 @@ are the `nulq` binary and, where explicitly required, dedicated lab fixtures —
 both read-only. Container isolation is verified per run and recorded in
 `lab/results/validation.json`; it is not assumed.
 
-Synthetic sudo, capability, systemd, cron and container-runtime fixtures exist
-for planned parsers. They are reported as **unsupported** scenarios until the
-corresponding rules exist, and are never presented as live observations.
+Synthetic capability, sudo, systemd, cron and container-runtime fixtures exist
+in the laboratory. The corresponding detection rules are implemented, but
+these five scenarios are reported as **unsupported** because the collectors
+read live system paths or need privileges unavailable in the read-only
+container; deeper container-runtime analysis is not implemented. Unsupported
+scenarios are never presented as passes or as live observations.
 
 ## Known limitations relevant to security
 
-- ACLs and MAC policy are not evaluated; findings use mode bits only.
+- POSIX ACLs are evaluated for replaceability checks when normalized ACL state is available; unreadable or malformed ACLs are treated as unknown and do not create a claim. AppArmor/SELinux MAC policy is reported as presence only (NULQ-SYS-002), not as a full policy audit.
 - NULQ does not detect TOCTOU races between collection and a finding's use. It
   performs no privileged action based on collected data, so the practical
   impact is limited to report accuracy.
-- `sudo` policy, capabilities, systemd and cron rules are implemented and
-  unit-tested but lack Alpine laboratory fixtures, so they appear as
-  unsupported lab scenarios. Do not treat a clean NULQ report as a complete
-  privilege-escalation assessment for those domains on this target.
+- `sudo` (`NULQ-ID-002`), capabilities (`NULQ-FS-005`) and cron
+  (`NULQ-ID-003`) are implemented with positive, negative and unavailable-data
+  unit tests; the systemd rule (`NULQ-SYS-005`) and collector are implemented
+  but lack dedicated unit tests. None of the five unsupported categories is
+  exercised against live Alpine targets, so do not treat a clean NULQ report
+  as a complete privilege-escalation assessment for those domains.
 - The JSON schema and `pkg/api` accept unknown fields for forward
   compatibility; consumers must validate the `schema_version` they rely on.
 

@@ -148,7 +148,10 @@ Implemented:
 
 Not yet implemented:
 
-- Group-mapping risks and namespace inventory/divergence.
+- Group-mapping risk analysis (for example subuid/subgid-style mappings) and
+  per-process namespace inventory/divergence. Current-process namespace
+  identifiers are collected by `linux.identity`; a per-process inventory is
+  not published.
 - Distribution compatibility matrix.
 - Restricted-environment degradation tests beyond current coverage.
 
@@ -172,24 +175,63 @@ Acceptance: every emitted relationship carries observation references; observed 
 
 Per AGENTS.md rule 10, correlation is implemented. NULQ may be described as correlating findings through the relationship engine.
 
-## M6 — Reporting and integration — **partially present**
+## M6 — Reporting and integration — **implemented**
 
-Already delivered: JSON Schema v1, JSONL, Markdown, stable IDs, exit codes,
-`pkg/api`, shell/Python examples.
+Delivered and tested:
 
-Remaining: stored-report queries (`findings list`, `report`), severity
-baselines and diffing between scans, integration test fixtures packaged for
-consumers. SARIF export is implemented (`scan --format sarif`,
-`report export --format sarif`) and tested.
+- JSON report schema 1.1, JSONL, Markdown and SARIF 2.1.0 output; stable IDs,
+  exit codes and `pkg/api` report types.
+- Persistent reports: `scan` saves by default under
+  `~/.local/share/nulq/reports`; `--data-dir`, `NULQ_DATA_DIR` and
+  `XDG_DATA_HOME` override the location, and `--save=false` disables saving.
+- Report commands: `report list`, `report show`, `report export` (json, jsonl,
+  markdown, sarif or terminal) and `report delete`.
+- Named baselines: `baseline create`, `list`, `show`, `delete` and `compare`.
+- Differential analysis with `new`, `resolved`, `changed`, `unchanged` and
+  `unresolved` states. An incomplete current scan marks affected comparisons
+  unresolved instead of resolving a finding.
+- SARIF 2.1.0 export through both `scan --format sarif` and
+  `report export --format sarif`.
+- Tests: `internal/storage/storage_test.go` (persistence, baselines, diff,
+  hostile-input handling), `internal/cli/audit_test.go` (report and baseline
+  commands) and `internal/reporting/audit_test.go` (SARIF escaping).
+
+Not delivered: consumer-packaged example fixtures. The supported integration
+surface is the CLI plus `pkg/api` and `report export`.
+
+Acceptance: a saved report can be listed, shown, exported in every supported
+format, used to create a baseline, and compared; these paths are covered by
+tests.
 
 ## M7 — Hardening and release — **in progress**
 
-Delivered: race-clean tests, parser fuzzing for mount parsing, threat model,
-release workflow with checksums.
+Delivered:
 
-Remaining: broader fuzzing (os-release, config parsers as they arrive),
-performance budget regression tests, independent security review, signed
-release artifacts, documentation review against behaviour, v0.1.0 tag.
+- Platform coverage: static linux/amd64 and linux/arm64 builds; nine collectors
+  (`linux.system`, `linux.identity`, `linux.filesystem`, `linux.process`,
+  `linux.sudo`, `linux.cron`, `linux.container`, `linux.systemd`,
+  `linux.sshd`); OS-release parsing; current-process namespace identifiers;
+  Linux-only targets documented in `docs/release/targets.md`.
+- Collector reliability: race-detector-clean suite; bounded concurrency with
+  per-collector and per-rule timeouts, panic isolation and deterministic
+  ordering; native fuzz targets for `/etc/passwd`, `/etc/group`,
+  `/etc/os-release`, mountinfo/mount fields and POSIX ACL parsing.
+- Security assurance: threat model; read-only code path; terminal and Markdown
+  sanitization; hardened report storage (0600 files, atomic writes, symlink
+  refusal, traversal guards, size and nesting limits); independent
+  source-level and acceptance audits in `docs/audits/`; per-run laboratory
+  isolation proof.
+- Release tooling: tag-triggered release workflow with SHA-256 checksums and
+  reproducible-build documentation. No release has been published.
+
+Remaining:
+
+- Signed release artifacts.
+- Performance-budget regression tests (no benchmarks are committed yet).
+- Privileged, opt-in integration tests for root-owned fixtures.
+- Broader fuzzing for configuration parsers not yet covered (sudoers, cron,
+  systemd, sshd).
+- Final independent release review and a published release.
 
 ## Cross-cutting backlog
 

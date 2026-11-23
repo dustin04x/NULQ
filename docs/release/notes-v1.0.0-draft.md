@@ -9,8 +9,9 @@ maintainer before publication.
 
 ## Version
 
-v1.0.0 (first stable release). Previous release: v0.1.0 (tag `v0.1.0`,
-2026-11-22; see `CHANGELOG.md` for its entry).
+v1.0.0 (first stable release, draft). Previous development line: `0.1.0-dev`,
+which is unreleased and has no tag or published artifact; see `CHANGELOG.md`
+for its entry.
 
 ## Headline (draft)
 
@@ -40,21 +41,22 @@ traceable to evidence item IDs. Standard library only; no runtime dependencies.
 
 ## Based on verified history (not v1.0.0 claims)
 
-The following is carried from `CHANGELOG.md` [0.1.0] (2026-11-22) and
-`ROADMAP.md` as the project's demonstrated baseline; it is not a list of
-v1.0.0 additions:
+The following is carried from `CHANGELOG.md` [0.1.0-dev] and `ROADMAP.md` as the
+project's demonstrated baseline; it is not a list of v1.0.0 additions:
 
-- Observation-first pipeline: 8 collectors
+- Observation-first pipeline: 9 collectors
   (`linux.system`, `linux.identity`, `linux.filesystem`, `linux.process`,
   `linux.sudo`, `linux.cron`, `linux.container`, `linux.systemd`,
   `linux.sshd`) and 20 registered rules
-  (`NULQ-ID-001`..`006`, `NULQ-FS-001`..`005`, `NULQ-PROC-001`,
-  `NULQ-SYS-001`..`009`).
+  (`NULQ-ID-001`–`ID-004`, `NULQ-ID-006`, `NULQ-FS-001`–`FS-005`,
+  `NULQ-PROC-001`, `NULQ-SYS-001`–`SYS-009`).
 - Evidence-backed findings; every finding cites observation IDs; aggregation
   enforces referential integrity and deterministic ordering.
-- Report formats: terminal, JSON, JSONL, Markdown; JSON Schema 1.1; output
-  files mode 0600; terminal-injection sanitization.
-- CLI: `scan`, `system info`, `rules list`, `version`; stable exit codes;
+- Report formats: terminal, JSON, JSONL, Markdown; SARIF 2.1.0 export; JSON
+  Schema 1.1; output files mode 0600; terminal-injection sanitization.
+- CLI: `scan`, `system info`, `rules list`, `version`, `report list`, `report
+  show`, `report export`, `report delete`, `baseline create`, `baseline list`,
+  `baseline show`, `baseline delete` and `baseline compare`; stable exit codes;
   `--fail-on` severity gate.
 - Typed error model; honest unavailability reporting; bounded concurrency
   with per-rule/per-collector timeouts and panic isolation.
@@ -62,16 +64,18 @@ v1.0.0 additions:
   all capabilities dropped, `no-new-privileges`, read-only root filesystem,
   `network_mode: none`, no host namespaces, no Docker socket.
 
-## Not in v1.0.0 scope (deferred milestones)
+## Deferred work (not in this build)
 
 Per `ROADMAP.md` and `MISSION.md`:
 
-- M6 reporting and integration: stored-report queries, severity baselines,
-  scan diffing, SARIF export evaluation (partially present).
-- M7 hardening and release: broader fuzzing, performance budget regression
-  tests, independent security review, signed release artifacts.
-- M4 remaining items: group-mapping risks, namespace inventory/divergence,
-  distribution compatibility matrix.
+- M4 remaining items: group-mapping risk analysis, per-process namespace
+  inventory/divergence, and the distribution compatibility matrix.
+- M7 remaining items: signed release artifacts, performance-budget regression
+  tests, privileged opt-in integration tests, broader configuration-parser
+  fuzzing, and a final independent release review.
+
+M6 (report persistence, report commands, baselines, differential analysis and
+SARIF export) is implemented; see `ROADMAP.md`.
 
 ## Checksums
 

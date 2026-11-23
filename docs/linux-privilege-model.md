@@ -136,5 +136,7 @@ and Yama are not MAC modules and do not satisfy the baseline.
 - No kernel-version-to-exploit mapping. Version alone never establishes
   exploitability.
 - No binary analysis, no fuzzing of discovered binaries, no exploitation.
-- No ACL evaluation in v0.1.0: mode bits only, documented in every affected
-  finding.
+- No ACL evaluation gap in the current code: POSIX ACLs are parsed and applied
+  to effective read/write/execute decisions in replaceability checks, with
+  unreadable or malformed ACL state treated as unknown. This is not a full ACL
+  audit, and MAC policy is reported as module presence/enforcement only.

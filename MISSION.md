@@ -5,7 +5,7 @@ are in `AGENTS.md`; milestone history is in `ROADMAP.md`.
 
 ## Current state
 
-NULQ is a working v0.1.0 foundation:
+NULQ is a working `0.1.0-dev` foundation:
 
 - Go module `github.com/dustin04x/nulq`, standard library only, static
   `CGO_ENABLED=0` builds for linux/amd64 and linux/arm64.
@@ -15,20 +15,24 @@ NULQ is a working v0.1.0 foundation:
 - Twenty registered rules across identity, filesystem, process, system
   and SSH domains: `NULQ-ID-001` through `NULQ-ID-004`, `NULQ-ID-006`,
   `NULQ-FS-001` through `NULQ-FS-005`, `NULQ-PROC-001`, `NULQ-SYS-001`
-  through `NULQ-SYS-009`. Rule ID `NULQ-ID-005` is not registered in v0.1.0.
+  through `NULQ-SYS-009`. Rule ID `NULQ-ID-005` is not registered in
+  `0.1.0-dev`.
 - Bounded-concurrency engine with per-collector and per-rule timeouts, panic
   isolation, prerequisite skipping and output validation.
-- Terminal, JSON, JSONL and Markdown reporting; JSON Schema 1.1; stable exit
-  codes.
+- Terminal, JSON, JSONL, Markdown and SARIF reporting; persisted reports and
+  named baselines with differential comparison (`nulq report`, `nulq
+  baseline`); JSON Schema 1.1; stable exit codes.
 - All verification gates pass: `gofmt`, `go vet`, `go test`, `go test -race`,
   `make build`, `make lab-build`, `make lab-test` (34/34 scenarios).
 - M1.5 independent audit documented in `docs/audits/m1.5-baseline.md` and
   `docs/audits/m1.5-final-engineering-report.md`; severity semantics in
   `docs/architecture/severity-confidence-model.md`.
-- Committed and pushed to `origin/master`; release tag `v0.1.0` exists.
+- The repository is on the `0.1.0-dev` development line. No release has been
+  published and binaries report `0.1.0-dev` (`nulq version`).
 
-Known unimplemented areas, deliberately out of scope here: stored-report
-queries (M6), release signing (M7).
+Known unimplemented areas, deliberately out of scope here: signed release
+artifacts and performance-budget regression tests (M7); group-mapping risk
+analysis and the distribution compatibility matrix (M4).
 
 ## Objective
 
@@ -176,14 +180,13 @@ mixed with fixture observations. Unsupported categories are reported as
 
 ## Next milestones
 
-1. **M4** — Advanced Linux analysis (group-mapping risks, namespace inventory,
-   distribution compatibility matrix). Container indicators (NULQ-SYS-008) and
-   kernel mitigations (NULQ-SYS-007) are already implemented; remaining M4
-   items are planned.
-2. **M5** — Relationship and correlation engine (designed, not implemented;
-   AGENTS.md rule 10).
-3. **M6** — Reporting and integration (stored-report queries, severity baselines,
-   diffing, SARIF export evaluation).
-4. **M7** — Hardening and release (broader fuzzing, performance budget
-   regression tests, independent security review, signed release artifacts,
-   v0.1.0 tag).
+1. **M4 (remaining)** — group-mapping risk analysis, per-process namespace
+   inventory/divergence, distribution compatibility matrix, and
+   restricted-environment degradation tests. Container indicators
+   (`NULQ-SYS-008`), kernel mitigations (`NULQ-SYS-007`), LSM state and
+   current-process namespace identifiers are implemented; the rest are
+   planned.
+2. **M7 (remaining)** — signed release artifacts, performance-budget regression
+   tests, privileged opt-in integration tests, and broader configuration-parser
+   fuzzing. Platform coverage, collector reliability and security-assurance work
+   already delivered is listed in `ROADMAP.md`. M5 and M6 are implemented.
